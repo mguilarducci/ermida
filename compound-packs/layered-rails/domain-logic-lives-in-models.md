@@ -12,5 +12,5 @@ object). A service orchestrates several domain operations and receives explicit 
 `params`, `session` or `Current`. Services are a waiting room until a proper abstraction emerges; `app/services`
 must not become a bag of random objects.
 
-How: `.claude/skills/layered-rails/references/patterns/service-objects.md`, `.claude/skills/layered-rails/references/anti-patterns/service-objects.md`,
-`.claude/skills/layered-rails/references/topics/current-attributes.md`; `/layered-rails-analyze-services` audits the service layer.
+How: `references/patterns/service-objects.md`, `references/anti-patterns/service-objects.md`,
+`references/topics/current-attributes.md`; `workflows/analyze-services.md` audits the service layer.

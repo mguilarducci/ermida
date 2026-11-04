@@ -11,5 +11,5 @@ Simple queries are scopes on the model. Complex, reused query building goes in a
 `app/queries/` (domain layer). A repository is justified only when returning custom domain objects that scopes
 and query objects cannot express.
 
-How: `.claude/skills/layered-rails/references/patterns/query-objects.md`, `.claude/skills/layered-rails/references/patterns/repositories.md`,
-`.claude/skills/layered-rails/examples/query-to-query-object.md`.
+How: `references/patterns/query-objects.md`, `references/patterns/repositories.md`,
+`examples/query-to-query-object.md`.

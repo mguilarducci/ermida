@@ -86,16 +86,16 @@ Building blocks and their base classes:
 ## Planning and reviewing
 
 We are adopting the layered design principles from "Layered Design for Ruby on Rails Applications": clean
-abstraction boundaries, explicit layers and specification tests. The `layered-rails` skill, its commands and its
-agents are installed by rails-hyperdrive into `.claude/`, without a plugin namespace.
+abstraction boundaries, explicit layers and specification tests. The `layered-rails` skill is installed per
+user, outside the repo; the paths below are relative to its folder.
 
 - **Planning** a feature or an architectural change (including `ce-brainstorm`, `ce-plan` and `ce-work`): use
-  the `layered-rails` skill for the analysis, and the `layered-rails-planner` agent for refactoring plans.
-  - `/layered-rails-plan [goal]`: plan incremental adoption of layered patterns
-  - `/layered-rails-analyze [path]`: architecture analysis of the codebase or a folder
-  - `/layered-rails-spec-test <path>`: apply the specification test to decide layer placement
-- **Reviewing** Rails changes (including `ce-code-review` and `ce-doc-review`): also run the
-  `layered-rails-reviewer` agent, or `/layered-rails-review`, to check for layer violations.
+  the `layered-rails` skill for the analysis.
+  - `workflows/plan.md`: plan incremental adoption of layered patterns
+  - `workflows/analyze.md`: architecture analysis of the codebase or a folder
+  - `workflows/spec-test.md`: apply the specification test to decide layer placement
+- **Reviewing** Rails changes (including `ce-code-review` and `ce-doc-review`): also follow the skill's
+  `workflows/review.md` to check for layer violations.
 
 The `layered-rails` Compound Pack (`compound-packs/layered-rails/`, declared in `.compound-engineering/config.yaml`)
 holds the situational rules: which pattern fits each kind of change and which skill file covers it. Planning

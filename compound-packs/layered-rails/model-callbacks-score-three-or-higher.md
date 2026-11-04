@@ -13,5 +13,5 @@ maintainer (internal consistency, `before_save :update_cached_count`) 4/5; times
 extracted to an explicit service object or event handler. No control flags to skip callbacks. Work that must run
 after the transaction commits, outside a model, uses `after_commit_everywhere` (in the Gemfile).
 
-How: `.claude/skills/layered-rails/references/topics/callbacks.md`, `.claude/skills/layered-rails/references/anti-patterns/callbacks.md`,
-`.claude/skills/layered-rails/examples/callbacks-to-service.md`; `/layered-rails-analyze-callbacks` scores existing callbacks.
+How: `references/topics/callbacks.md`, `references/anti-patterns/callbacks.md`,
+`examples/callbacks-to-service.md`; `workflows/analyze-callbacks.md` scores existing callbacks.

@@ -9,4 +9,4 @@ tags: [layered-rails, ai, llm, agents]
 Agents go in `app/agents/` (application layer); a wrapped LLM client is infrastructure. Every AI call has a
 failure path.
 
-How: `.claude/skills/layered-rails/references/topics/ai-integration.md`.
+How: `references/topics/ai-integration.md`.

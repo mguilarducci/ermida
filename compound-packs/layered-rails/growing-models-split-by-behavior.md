@@ -11,6 +11,6 @@ A concern groups one behavior, not one kind of artifact (all validations, all sc
 behavior becomes a collaborator object (`has_object`, from `active_record-associated_object` in the Gemfile).
 Identity-less concepts become value objects.
 
-How: `.claude/skills/layered-rails/references/patterns/collaborator-objects.md`, `.claude/skills/layered-rails/references/patterns/value-objects.md`,
-`.claude/skills/layered-rails/references/patterns/concerns.md`, `.claude/skills/layered-rails/references/anti-patterns/concerns.md`,
-`.claude/skills/layered-rails/examples/god-object-decomposition.md`; `/layered-rails-analyze-gods` finds god objects.
+How: `references/patterns/collaborator-objects.md`, `references/patterns/value-objects.md`,
+`references/patterns/concerns.md`, `references/anti-patterns/concerns.md`,
+`examples/god-object-decomposition.md`; `workflows/analyze-gods.md` finds god objects.

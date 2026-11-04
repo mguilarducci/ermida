@@ -10,5 +10,5 @@ tags: [layered-rails, authorization, action-policy, policies]
 Each rule is a policy under `app/policies/` inheriting `ApplicationPolicy`; controllers and views ask the policy.
 Models do not check permissions.
 
-How: `.claude/skills/layered-rails/references/patterns/policy-objects.md`, `.claude/skills/layered-rails/references/topics/authorization.md`,
-`.claude/skills/layered-rails/references/gems/action-policy.md`, `.claude/skills/layered-rails/examples/authorization-to-policy.md`.
+How: `references/patterns/policy-objects.md`, `references/topics/authorization.md`,
+`references/gems/action-policy.md`, `examples/authorization-to-policy.md`.
