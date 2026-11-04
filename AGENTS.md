@@ -78,7 +78,9 @@ Building blocks and their base classes:
   Active Job and Action Cable test adapters.
 - **Frontend**: entry points in `app/javascript/entrypoints/`, Stimulus controllers in
   `app/javascript/controllers/`, loaded in the layout with `vite_javascript_tag`/`vite_stylesheet_tag`.
-  There is no importmap.
+  There is no importmap. Styles are Tailwind CSS 4 with daisyUI 5, through the `@tailwindcss/vite` plugin;
+  the daisyUI themes (light by default, dark when the system prefers it) are set in
+  `app/javascript/entrypoints/application.css`, and Tailwind only reads class names under `app/`.
 - **Metrics and logs**: Yabeda collects Rails, Active Job and Puma metrics; Puma exports them for Prometheus on
   `:9394/metrics` (not published by compose or Kamal). Processes share them through `tmp/prometheus/`, because
   Solid Queue workers are forked. Production logs one line per request (Lograge).
