@@ -92,6 +92,8 @@ gem "active_job-performs", "~> 1.0"
 gem "after_commit_everywhere", "~> 1.6"
 # Validations backed by database constraints (unique indexes, foreign keys)
 gem "database_validations", "~> 2.1"
+# Human-readable slugs in URLs [https://github.com/norman/friendly_id]
+gem "friendly_id", "~> 5.7"
 
 # ==============================================================================
 # Database operations

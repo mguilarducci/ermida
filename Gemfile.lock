@@ -212,6 +212,8 @@ GEM
     flipper-active_record (1.4.2)
       activerecord (>= 4.2, < 9)
       flipper (~> 1.4.2)
+    friendly_id (5.7.0)
+      activerecord (>= 4.0.0)
     fugit (1.14.0)
       et-orbi (~> 1.4)
       raabro (~> 1.4)
@@ -664,6 +666,7 @@ DEPENDENCIES
   evil-seed
   factory_bot_rails
   flipper-active_record (~> 1.4)
+  friendly_id (~> 5.7)
   groupdate (~> 6.8)
   herb (~> 0.11.1)
   image_processing (~> 2.2)
@@ -789,6 +792,7 @@ CHECKSUMS
   ffi (1.17.4-x86_64-linux-musl) sha256=3fdf9888483de005f8ef8d1cf2d3b20d86626af206cbf780f6a6a12439a9c49e
   flipper (1.4.2) sha256=dca7d65b5ec660b525b6c599e727219ac4994073c855b41b6656b2d91a9cb304
   flipper-active_record (1.4.2) sha256=ab70aeb78a44d59c690b5538fc269b08d1c2918abb720fe82832ac77fb1dfcd1
+  friendly_id (5.7.0) sha256=b8994416ebaceebc7c60bc556e84ef32a3a663e2e582eb04c429216cc98de4c4
   fugit (1.14.0) sha256=e311a9cc85a54bb67649df45060e721282a1e2c8ebad40e41874a3a7d576f37e
   get_process_mem (1.0.0) sha256=d54024f3bcbf776a4d6e0155ec2b21bc3ba44e2fd158c4c00c80aa8a36e0b4aa
   globalid (1.4.0) sha256=037f12fbf1d9d7a014d501c2d5c77356fd4ddd96d7a7991d6700bba96706f427
