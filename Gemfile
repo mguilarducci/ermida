@@ -227,4 +227,3 @@ group :test do
 end
 
 gem "rails-hyperdrive", "~> 0.10.1", group: :development
-gem "layered-rails-skills", "~> 3.1", group: :development

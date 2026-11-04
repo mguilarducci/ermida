@@ -10,4 +10,4 @@ Jobs are inbound entry points (presentation layer), like controllers without aut
 a single call on its argument is an anemic job: use `performs` on the model instead. Keep a separate job class
 only when it does real orchestration.
 
-How: `.claude/skills/layered-rails/references/anti-patterns/jobs.md`, `.claude/skills/layered-rails/references/gems/active-job-performs.md`.
+How: `references/anti-patterns/jobs.md`, `references/gems/active-job-performs.md`.

@@ -11,6 +11,6 @@ View-specific formatting goes in a presenter. Reusable UI is a component inherit
 with a preview for Lookbook. A helper with more than two or three `tag.*` calls, or nested HTML, becomes a
 component.
 
-How: `.claude/skills/layered-rails/references/patterns/presenters.md`, `.claude/skills/layered-rails/references/topics/view-components.md`,
-`.claude/skills/layered-rails/references/gems/view-component.md`, `.claude/skills/layered-rails/references/anti-patterns/helpers.md`,
-`.claude/skills/layered-rails/examples/view-logic-to-presenter.md`.
+How: `references/patterns/presenters.md`, `references/topics/view-components.md`,
+`references/gems/view-component.md`, `references/anti-patterns/helpers.md`,
+`examples/view-logic-to-presenter.md`.

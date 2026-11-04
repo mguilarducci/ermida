@@ -1,1 +1,1 @@
-Layered architecture rules for Rails code in this app: which layer code belongs in, which pattern fits, and which layered-rails skill file or command to use for it.
+Layered architecture rules for Rails code in this app: which layer code belongs in, which pattern fits, and which file of the `layered-rails` skill to use for it. The skill is installed per user, outside the repo; file paths in this pack are relative to its folder.

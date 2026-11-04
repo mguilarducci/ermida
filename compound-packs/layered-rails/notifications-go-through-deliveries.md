@@ -10,4 +10,4 @@ Notifications belong to the application layer. A delivery under `app/deliveries/
 fans one notification out to every channel (`PostsDelivery.published(post)` calls `PostsMailer.published`).
 Models and model callbacks never send notifications.
 
-How: `.claude/skills/layered-rails/references/topics/notifications.md`, `.claude/skills/layered-rails/references/gems/active-delivery.md`.
+How: `references/topics/notifications.md`, `references/gems/active-delivery.md`.

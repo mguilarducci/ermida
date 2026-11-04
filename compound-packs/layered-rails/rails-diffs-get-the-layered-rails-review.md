@@ -9,5 +9,5 @@ tags: [layered-rails, review, layer-violations]
 controllers, anemic models, request objects or params passed into services, notifications sent from models,
 low-scoring callbacks, code-slicing concerns and god objects.
 
-How: `.claude/skills/layered-rails/workflows/review.md`, also available as `/layered-rails-review` or the `layered-rails-reviewer` agent.
-Violation catalog: `.claude/skills/layered-rails/references/anti-patterns/layer-violations.md`.
+How: `workflows/review.md`.
+Violation catalog: `references/anti-patterns/layer-violations.md`.

@@ -8,4 +8,4 @@ tags: [layered-rails, testing]
 
 Business logic is tested in model (or domain object) tests; controller tests cover HTTP concerns.
 
-How: `.claude/skills/layered-rails/references/anti-patterns/testing.md`.
+How: `references/anti-patterns/testing.md`.

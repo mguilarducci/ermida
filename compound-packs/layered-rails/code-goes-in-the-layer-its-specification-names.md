@@ -12,6 +12,6 @@ Lower layers never depend on higher ones. Before placing code, apply the specifi
 object does, check each responsibility against its layer's primary concern, and extract the misplaced ones
 downward. Do not place code by habit (`app/services` by default).
 
-How, with the `layered-rails` skill: `.claude/skills/layered-rails/references/core/specification-test.md`,
-`.claude/skills/layered-rails/references/core/architecture-layers.md`, and the "Pattern Selection Guide" in `.claude/skills/layered-rails/SKILL.md`.
-`/layered-rails-spec-test <path>` runs the test on existing files.
+How, with the `layered-rails` skill: `references/core/specification-test.md`,
+`references/core/architecture-layers.md`, and the "Pattern Selection Guide" in `SKILL.md`.
+`workflows/spec-test.md` runs the test on existing files.

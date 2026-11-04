@@ -8,4 +8,4 @@ tags: [layered-rails, state-machines, models]
 
 Transitions happen through events that validate the move, not by assigning the state attribute directly.
 
-How: `.claude/skills/layered-rails/references/patterns/state-machines.md`, `.claude/skills/layered-rails/examples/implicit-to-explicit-state-machine.md`.
+How: `references/patterns/state-machines.md`, `examples/implicit-to-explicit-state-machine.md`.

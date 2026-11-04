@@ -9,4 +9,4 @@ tags: [layered-rails, instrumentation, logging, metrics]
 Code publishes events; subscribers (log subscribers, metrics) consume them. Metrics are exported with Yabeda in
 this app.
 
-How: `.claude/skills/layered-rails/references/topics/instrumentation.md`.
+How: `references/topics/instrumentation.md`.

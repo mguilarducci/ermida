@@ -9,4 +9,4 @@ tags: [layered-rails, serializers, api, json]
 Serialization is presentation layer. Use one serializer per context (list, detail, admin) instead of options
 threaded through the model.
 
-How: `.claude/skills/layered-rails/references/patterns/serializers.md`.
+How: `references/patterns/serializers.md`.
