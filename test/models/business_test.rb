@@ -43,6 +43,17 @@ class BusinessTest < ActiveSupport::TestCase
     assert business.errors.added?(:name, :invalid)
   end
 
+  test "a name written only in a non-Latin alphabet is rejected" do
+    business = build(:business, name: "Москва")
+
+    assert_not business.valid?
+    assert business.errors.added?(:name, :invalid)
+  end
+
+  test "a name made only of digits is accepted" do
+    assert_equal "2024", create(:business, name: "2024").slug
+  end
+
   test "a blank name is rejected" do
     business = build(:business, name: "  ")
 

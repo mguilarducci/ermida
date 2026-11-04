@@ -43,6 +43,14 @@ class BusinessesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "a numeric id does not open a business page" do
+    business = create(:business, name: "Padaria do João")
+
+    get "/businesses/#{business.id}"
+
+    assert_response :not_found
+  end
+
   test "create redirects to the new business with a notice" do
     post businesses_path, params: {business: {name: "Padaria do João", description: "Fresh bread daily."}}
 

@@ -59,7 +59,7 @@ Styling is not a concern of this work, but markup written without a target desig
 - R4. Slugs are unique; when a slug is taken, the business gets the number after the highest suffix in use for that slug (`-2`, `-3`, and so on).
 - R5. `new` and `edit` count as taken slugs, so a name that would produce them gets a suffix per R4.
 - R6. A slug never changes after creation, including when the name is edited, and it does not appear in the form.
-- R7. A name that produces an empty slug, because it has no letters or digits, is rejected with a validation error on `name`.
+- R7. A name that produces an empty slug, because it has no Latin letters or digits, is rejected with a validation error on `name`; names written only in other alphabets are rejected, and names made only of digits are accepted.
 - R8. Business pages are addressed by slug rather than by id.
 
 **Screens**

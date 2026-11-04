@@ -45,7 +45,8 @@ class BusinessesController < ApplicationController
   private
 
   def set_business
-    @business = Business.friendly.find(params[:id])
+    # Slug only: plain friendly.find would also accept a numeric id.
+    @business = Business.friendly.find_by_friendly_id(params[:id])
     authorize! @business
   end
 
