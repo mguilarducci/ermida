@@ -27,6 +27,9 @@ dip bash                                   # shell in the app container
 ```
 
 - `RAILS_ENV` is empty in the containers on purpose, so `bin/rails test` switches to test by itself.
+- Development-only tools under http://localhost:3000: `/jobs` (Mission Control), `/pghero`, `/letter_opener`
+  (every email sent in development lands here) and `/lookbook` (component previews). None is mounted in
+  production.
 - System tests (`test/system/`, `ApplicationSystemTestCase`) drive headless Chrome through Cuprite, with
   capybara-lockstep in the layout. The dev image has no Chrome: in Docker they connect to the `chrome` service
   (browserless) through `CHROME_URL`, which only `dip rails test:system` and `dip ci` set (they stop the
