@@ -40,7 +40,7 @@ Styling is not a concern of this work, but markup written without a target desig
 
 - **Everyone may use every action, through a policy.** There is no login yet; routing every action through a policy keeps the future restriction to a policy change. Governs R15. (session-settled: user-directed — chosen over keeping the routes development-only and over building login first: the screens should be usable now, and only the policy should change later)
 - **Deleting is permanent.** Governs R12. (session-settled: user-directed — chosen over soft delete with the discard gem: simplest behavior, accepting that deleted data cannot be recovered)
-- **The name is required but not unique.** Governs R1, R2. (session-settled: user-directed — chosen over a unique name and over a length cap)
+- **The name is required, not unique, and capped at 100 characters.** Governs R1, R2. (session-settled: user-directed — chosen over a unique name; the cap was added after code review showed a very long name overflows the slug's unique index)
 - **The slug is fixed at creation.** Old links keep working after a rename, at the cost of slugs that may drift from the current name. Governs R6. (session-settled: user-directed — chosen over regenerating on every rename, a hand-editable slug, and keeping ids in URLs)
 - **Slug conflicts get a sequential suffix.** Creation never fails because of the slug. Governs R4, R5. (session-settled: user-directed — chosen over rejecting a name whose slug is taken)
 - **friendly_id generates and resolves slugs.** Its defaults append a UUID on conflict, so the sequential-suffix and reserved-word rules depend on configuring it for sequential slugs and for treating reserved words as conflicts. Governs R3–R5, R8.
@@ -50,7 +50,7 @@ Styling is not a concern of this work, but markup written without a target desig
 
 **Business records**
 
-- R1. `name` is required; `description` is optional free text with no length limit.
+- R1. `name` is required and at most 100 characters; `description` is optional free text with no length limit.
 - R2. Two businesses may share the same `name`.
 
 **Slugs and URLs**

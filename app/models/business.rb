@@ -6,7 +6,8 @@ class Business < ApplicationRecord
   friendly_id :name, use: %i[slugged sequentially_slugged reserved],
     reserved_words: %w[new edit], treat_reserved_as_conflict: true
 
-  validates :name, presence: true
+  # The cap also keeps the slug well under the size Postgres accepts in its unique index.
+  validates :name, presence: true, length: {maximum: 100}
   validate :name_must_produce_a_slug
 
   scope :alphabetical, -> { order(:name) }

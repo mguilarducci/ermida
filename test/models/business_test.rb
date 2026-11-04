@@ -54,6 +54,17 @@ class BusinessTest < ActiveSupport::TestCase
     assert_equal "2024", create(:business, name: "2024").slug
   end
 
+  test "a name longer than 100 characters is rejected" do
+    business = build(:business, name: "a" * 101)
+
+    assert_not business.valid?
+    assert business.errors.added?(:name, :too_long, count: 100)
+  end
+
+  test "a name of exactly 100 characters is accepted" do
+    assert build(:business, name: "a" * 100).valid?
+  end
+
   test "a blank name is rejected" do
     business = build(:business, name: "  ")
 
