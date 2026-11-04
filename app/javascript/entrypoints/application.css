@@ -1,5 +1,14 @@
 /*
  * Application styles, bundled by Vite (vite_stylesheet_tag "application" in the layout).
  *
+ * Tailwind CSS with the daisyUI plugin. source("../..") makes Tailwind look for class names
+ * under app/ only (views, components, helpers, JavaScript), wherever the build runs from.
+ *
  * Import other stylesheets from here, e.g. @import "../styles/buttons.css";
  */
+@import "tailwindcss" source("../..");
+
+/* light by default, dark when the system prefers dark */
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
