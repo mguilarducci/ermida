@@ -30,6 +30,8 @@ dip bash                                   # shell in the app container
 - Development-only tools under http://localhost:3000: `/jobs` (Mission Control), `/pghero`, `/letter_opener`
   (every email sent in development lands here) and `/lookbook` (component previews). None is mounted in
   production.
+- N+1 queries show in a footer on development pages and fail tests (Prosopite). strong_migrations stops unsafe
+  migrations, and runs each migration with lock and statement timeouts.
 - System tests (`test/system/`, `ApplicationSystemTestCase`) drive headless Chrome through Cuprite, with
   capybara-lockstep in the layout. The dev image has no Chrome: in Docker they connect to the `chrome` service
   (browserless) through `CHROME_URL`, which only `dip rails test:system` and `dip ci` set (they stop the

@@ -1,0 +1,16 @@
+# Finds N+1 queries in development and in tests, see https://github.com/charkost/prosopite
+if Rails.env.development?
+  # In tests, the scan of each test covers its requests
+  require "prosopite/middleware/rack"
+  Rails.configuration.middleware.use(Prosopite::Middleware::Rack)
+end
+
+Rails.application.config.after_initialize do
+  if Rails.env.development?
+    Prosopite.add_footer = true
+  elsif Rails.env.test?
+    Prosopite.raise = true
+    # Leave out the N+1 queries of factories, which only set up the tests
+    Prosopite.pause_during("factory_bot.run_factory")
+  end
+end

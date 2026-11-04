@@ -10,6 +10,10 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # Fail any test that runs an N+1 query (config/initializers/prosopite.rb)
+    setup { Prosopite.scan("#{self.class}##{name}") }
+    teardown { Prosopite.finish }
+
     # Add more helper methods to be used by all tests here...
   end
 end
