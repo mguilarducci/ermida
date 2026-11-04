@@ -32,6 +32,9 @@ dip bash                                   # shell in the app container
   production.
 - N+1 queries show in a footer on development pages and fail tests (Prosopite). strong_migrations stops unsafe
   migrations, and runs each migration with lock and statement timeouts.
+- Test helpers (`test/test_helper.rb`): FactoryBot methods (factories in `test/factories/`), WebMock blocking real
+  HTTP (record a needed call once with VCR into `test/cassettes/`), n_plus_one_control's
+  `assert_perform_constant_number_of_queries`, and `with_model` for throwaway tables when testing concerns.
 - System tests (`test/system/`, `ApplicationSystemTestCase`) drive headless Chrome through Cuprite, with
   capybara-lockstep in the layout. The dev image has no Chrome: in Docker they connect to the `chrome` service
   (browserless) through `CHROME_URL`, which only `dip rails test:system` and `dip ci` set (they stop the
