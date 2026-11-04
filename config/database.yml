@@ -2,7 +2,9 @@
 #
 # In development and test, the connection comes from DATABASE_URL
 # (set in .dockerdev/compose.yml); Rails merges it on top of the values below
-# and keeps the database names defined here.
+# and keeps the database names defined here. DATABASE_URL only reaches the
+# primary database; the cache, queue and cable ones connect through the
+# PGHOST/PGUSER/PGPASSWORD variables compose also sets, which libpq reads.
 #
 default: &default
   adapter: postgresql
@@ -11,9 +13,23 @@ default: &default
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
+# Same layout as production: Solid Cache, Queue and Cable get their own databases
 development:
-  <<: *default
-  database: ermida_development
+  primary:
+    <<: *default
+    database: ermida_development
+  cache:
+    <<: *default
+    database: ermida_development_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *default
+    database: ermida_development_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *default
+    database: ermida_development_cable
+    migrations_paths: db/cable_migrate
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".

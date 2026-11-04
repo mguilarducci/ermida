@@ -65,7 +65,9 @@ Building blocks and their base classes:
   methods. `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
   skill rather than reading `ENV` or credentials directly.
 - **Feature flags**: Flipper, stored in the database.
-- **Jobs, cache, cable**: the Solid stack on Postgres; production has separate cache/queue/cable databases.
+- **Jobs, cache, cable**: Solid Queue, Cache and Cable on Postgres, each on its own database, in development as
+  in production. `dip rails s` runs the Solid Queue worker inside Puma (`SOLID_QUEUE_IN_PUMA`); tests use the
+  Active Job and Action Cable test adapters.
 - **Frontend**: entry points in `app/javascript/entrypoints/`, Stimulus controllers in
   `app/javascript/controllers/`, loaded in the layout with `vite_javascript_tag`/`vite_stylesheet_tag`.
   There is no importmap.

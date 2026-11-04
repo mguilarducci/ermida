@@ -91,6 +91,8 @@ services:
       <<: *backend_environment
       # Rails proxies /vite-dev requests to the dev server
       VITE_RUBY_HOST: vite
+      # Runs the Solid Queue worker inside Puma (plugin in config/puma.rb), as Kamal does in production
+      SOLID_QUEUE_IN_PUMA: "true"
     # Localhost only: rootful Docker publishes ports past the host firewall
     ports:
       - "127.0.0.1:3000:3000"
