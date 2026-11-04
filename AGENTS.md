@@ -74,6 +74,9 @@ Building blocks and their base classes:
 - **Frontend**: entry points in `app/javascript/entrypoints/`, Stimulus controllers in
   `app/javascript/controllers/`, loaded in the layout with `vite_javascript_tag`/`vite_stylesheet_tag`.
   There is no importmap.
+- **Metrics and logs**: Yabeda collects Rails, Active Job and Puma metrics; Puma exports them for Prometheus on
+  `:9394/metrics` (not published by compose or Kamal). Processes share them through `tmp/prometheus/`, because
+  Solid Queue workers are forked. Production logs one line per request (Lograge).
 
 ## Planning and reviewing
 
