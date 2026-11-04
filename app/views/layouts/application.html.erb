@@ -27,6 +27,9 @@
   </head>
 
   <body>
-    <%= yield %>
+    <%= render Flash::Component.new(notice:, alert:) %>
+    <main>
+      <%= yield %>
+    </main>
   </body>
 </html>
