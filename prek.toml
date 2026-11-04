@@ -1,0 +1,20 @@
+# Git pre-commit hooks, run by prek (https://prek.j178.dev). `dip provision` installs them.
+# Run them by hand: mise exec prek@0.5.7 -- prek run --all-files
+
+[[repos]]
+repo = "local"
+hooks = [
+  # Through dip, so it lints with the gems in the development container
+  { id = "rubocop", name = "rubocop", language = "system", entry = "dip rubocop --force-exclusion", types = ["ruby"] },
+  # The whole app: dependency cycles span files, so checking only the staged ones isn't enough
+  { id = "archspec", name = "archspec", language = "system", entry = "dip archspec check", types = ["ruby"], pass_filenames = false },
+]
+
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "check-merge-conflict" },
+  { id = "check-case-conflict" },
+  { id = "check-added-large-files" },
+  { id = "detect-private-key" },
+]

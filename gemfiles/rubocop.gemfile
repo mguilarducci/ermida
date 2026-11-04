@@ -1,0 +1,4 @@
+# Standard pins RuboCop and standard-rails pins rubocop-rails: don't list either one.
+# Pinned to a minor because each minor brings new cops.
+gem "standard", "~> 1.57.0", require: false
+gem "standard-rails", "~> 1.6.0", require: false

@@ -1,0 +1,121 @@
+# AGENTS.md
+
+This file provides guidance to coding agents working with code in this repository.
+
+## What this is
+
+Ermida, a Rails 8.1 application (Ruby 4.0, PostgreSQL 18, Hotwire, Vite on Bun, Minitest, Standard). Most of
+the app is base classes and wiring; the gem stack is curated and commented by purpose in the `Gemfile`, so read
+that before adding a gem that might duplicate one already there.
+
+## Commands
+
+Development runs in Docker through [dip](https://github.com/bibendi/dip) (setup in `.dockerdev/`, separate from
+the production `Dockerfile` used by Kamal). Run Ruby, Rails and Bun commands through `dip`, not on the host.
+
+```sh
+dip provision                              # build image, start Postgres, bundle, bun install, db:prepare, install prek hooks
+dip rails s                                # server on :3000 plus the Vite dev server on :3036
+dip rails test                             # whole suite
+dip rails test test/models/foo_test.rb:42  # one file, or one test by line
+dip rails test:system                      # system tests, against the chrome service
+dip ci                                     # bin/ci: the whole local CI, system tests included
+dip rubocop                                # Standard, through RuboCop (-a to autocorrect)
+dip archspec check                         # layer boundaries from Archspec.rb
+dip bun add <pkg>                          # JavaScript packages
+dip bash                                   # shell in the app container
+```
+
+- `RAILS_ENV` is empty in the containers on purpose, so `bin/rails test` switches to test by itself.
+- System tests (`test/system/`, `ApplicationSystemTestCase`) drive headless Chrome through Cuprite, with
+  capybara-lockstep in the layout. The dev image has no Chrome: in Docker they connect to the `chrome` service
+  (browserless) through `CHROME_URL`, which only `dip rails test:system` and `dip ci` set (they stop the
+  service when they finish), so plain `dip rails test test/system/...` fails. GitHub CI launches its own Chrome.
+- The pre-commit hooks (`prek.toml`) run RuboCop and archspec through dip, so Docker must be running to commit.
+  Run them by hand with `mise exec prek@0.5.7 -- prek run --all-files`.
+- CI is `.github/workflows/ci.yml`: brakeman, bundler-audit, `bun audit`, rubocop, archspec, tests and
+  system tests. `bin/ci` (`config/ci.rb`) runs a local version: setup, rubocop, archspec, the audits, brakeman,
+  tests, seeds and system tests.
+- After changing `.dockerdev/Dockerfile`, `.dockerdev/Aptfile` or build args, bump the image tag in
+  `.dockerdev/compose.yml` and run `dip provision` again.
+
+## Architecture
+
+The app follows layered design ("Layered Design for Ruby on Rails Applications"), enforced statically by
+`Archspec.rb` in CI and pre-commit. Layers, from top to bottom; a layer may use the ones below it, never above:
+
+- **presentation**: controllers, views, components, helpers, presenters, serializers, forms, filters, channels, jobs
+- **application**: services, operations, policies, mailers, deliveries, notifiers, agents
+- **domain**: models, queries, values, repositories, configs
+- **infrastructure**: clients (vendor code goes one level deeper, e.g. `app/clients/stripe/`; folders like
+  `app/stripe/` are rejected)
+
+Lower layers must not call `render`, `redirect_to`, `params`, `session`, `cookies` or `flash`, and models must
+not reference `Current`; pass explicit parameters instead. Archspec only sees static boundaries; the rest of
+the design is covered by the `layered-rails` skill (see "Planning and reviewing" below).
+
+Building blocks and their base classes:
+
+- **Components**: `ApplicationViewComponent` (view_component-contrib). Previews inherit
+  `ApplicationViewComponentPreview`, can sit next to their component, and show in Lookbook.
+- **Notifications**: `ApplicationDelivery` (Active Delivery). `PostsDelivery.published(post)` fans out to
+  `PostsMailer.published` and any other channel.
+- **Authorization**: `ApplicationPolicy` (Action Policy).
+- **Configuration**: classes in `config/configs/` inheriting `ApplicationConfig` (Anyway Config), read as class
+  methods. `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
+  skill rather than reading `ENV` or credentials directly.
+- **Feature flags**: Flipper, stored in the database.
+- **Jobs, cache, cable**: the Solid stack on Postgres; production has separate cache/queue/cable databases.
+- **Frontend**: entry points in `app/javascript/entrypoints/`, Stimulus controllers in
+  `app/javascript/controllers/`, loaded in the layout with `vite_javascript_tag`/`vite_stylesheet_tag`.
+  There is no importmap.
+
+## Planning and reviewing
+
+We are adopting the layered design principles from "Layered Design for Ruby on Rails Applications": clean
+abstraction boundaries, explicit layers and specification tests. The `layered-rails` skill, its commands and its
+agents are installed by rails-hyperdrive into `.claude/`, without a plugin namespace.
+
+- **Planning** a feature or an architectural change (including `ce-brainstorm`, `ce-plan` and `ce-work`): use
+  the `layered-rails` skill for the analysis, and the `layered-rails-planner` agent for refactoring plans.
+  - `/layered-rails-plan [goal]`: plan incremental adoption of layered patterns
+  - `/layered-rails-analyze [path]`: architecture analysis of the codebase or a folder
+  - `/layered-rails-spec-test <path>`: apply the specification test to decide layer placement
+- **Reviewing** Rails changes (including `ce-code-review` and `ce-doc-review`): also run the
+  `layered-rails-reviewer` agent, or `/layered-rails-review`, to check for layer violations.
+
+The `layered-rails` Compound Pack (`compound-packs/layered-rails/`, declared in `.compound-engineering/config.yaml`)
+holds the situational rules: which pattern fits each kind of change and which skill file covers it. Planning
+and review cite it as `(pack: layered-rails, <file>)`.
+
+## Tooling for agents
+
+- The `rails-hyperdrive` MCP server (`.mcp.json`) is served by the running app at `/_hyperdrive/mcp`, so it
+  only works while `dip rails s` is up. It gives routes, models, source locations, SQL and logs.
+- Compound Engineering is configured in `.compound-engineering/config.yaml`; its artifacts (plans,
+  brainstorms, solutions) live under `.compound-engineering/artifacts/`.
+  `.compound-engineering/artifacts/solutions/` holds documented solutions to past problems (bugs, best
+  practices, workflow patterns), organized by category with YAML frontmatter (module, tags, problem_type);
+  relevant when implementing or debugging in an area it covers.
+
+## Conventions
+
+- `CODING_STANDARDS.md`: the rules Ruby code here follows beyond Standard and Archspec. Read it before writing
+  or reviewing code, and update it when a change establishes or retires a rule.
+- `REVIEW.md`: how review behaves here (it includes `CODING_STANDARDS.md`). Read it before reviewing code, and
+  update it when the team's review policy changes.
+- Commit messages are one imperative line that states the outcome and why, e.g. "Keep bundlebun below 0.5.1
+  so the app boots outside rake".
+- Gem version constraints in the `Gemfile` carry a comment when they pin around a bug; keep it current.
+- After a solved, verified problem, automatically invoke the `ce-compound` skill with
+  `mode:non-interactive` at the completion checkpoint only when the work produced durable project
+  reasoning that is not readily recoverable from the final code, tests, types, comments, or existing
+  documentation, and losing it would plausibly cause recurrence, material risk, or substantial
+  rediscovery. Apply this counterfactual: if the learning document disappeared, would a future engineer
+  reading the final implementation still be likely to repeat the mistake or redo substantial
+  investigation? If not, do not invoke it. Completion, effort, and diff size alone are not enough.
+  Capture at the checkpoint so a qualifying learning can ship in the PR that produced it, and only where
+  the repository treats captured learnings as tracked, committed knowledge.
+- Write every report, summary, or handoff to the user through the `ce-noslop` skill. This applies when
+  you are the top-level agent writing to the user, not when you are a subagent reporting to its caller.
+  Do not apply it to code, config, verbatim quotes, or text the user asked to post as written.

@@ -1,0 +1,14 @@
+# Standard's rules through RuboCop, so editors and bin/rubocop share one config:
+# https://github.com/standardrb/standard#running-standards-rules-via-rubocop
+# standard itself is not a RuboCop plugin; the other three are.
+plugins:
+  - standard-custom
+  - standard-performance
+  - standard-rails
+
+inherit_gem:
+  standard: config/base.yml
+
+AllCops:
+  # Keeps the extension tip out of every pre-commit run
+  SuggestExtensions: false
