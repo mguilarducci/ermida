@@ -1,5 +1,3 @@
-# One labeled form field in daisyUI markup: the label, the control and, when the attribute is invalid, its error
-# message linked to the control so screen readers announce the reason.
 class FormField::Component < ApplicationViewComponent
   CONTROL_CLASSES = {text_field: "input", text_area: "textarea"}.freeze
 
