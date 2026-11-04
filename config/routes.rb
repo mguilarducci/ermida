@@ -1,5 +1,13 @@
 Rails.application.routes.draw do
-  mount Rails::Hyperdrive::Engine => "/_hyperdrive" if Rails.env.development?
+  if Rails.env.development?
+    mount Rails::Hyperdrive::Engine => "/_hyperdrive"
+    # Development tools. Mission Control and PgHero stay out of production until the app has an admin login.
+    mount MissionControl::Jobs::Engine, at: "/jobs"
+    mount PgHero::Engine, at: "/pghero"
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+    mount Lookbook::Engine, at: "/lookbook"
+  end
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

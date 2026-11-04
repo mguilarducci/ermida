@@ -142,6 +142,10 @@ gem "yabeda-rails"
 gem "yabeda-activejob"
 gem "yabeda-puma-plugin", require: false
 gem "yabeda-prometheus"
+# prometheus-client 4.x (the most yabeda-prometheus 0.9 allows) calls CGI.parse in its multi-process file store,
+# and Ruby 4.0 only ships cgi/escape. Drop this once yabeda-prometheus accepts prometheus-client 5, which no
+# longer needs it.
+gem "cgi", "~> 0.5", require: false
 
 group :production do
   # Single-line structured request logs

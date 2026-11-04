@@ -29,7 +29,7 @@ Rails.application.configure do
   end
 
   # Change to :null_store to avoid any caching.
-  config.cache_store = :memory_store
+  config.cache_store = :solid_cache_store
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
@@ -43,6 +43,12 @@ Rails.application.configure do
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = {host: "localhost", port: 3000}
 
+  # Sent emails are kept and shown at /letter_opener
+  config.action_mailer.delivery_method = :letter_opener_web
+
+  # Mission Control (/jobs) is only mounted in development; its HTTP basic auth would otherwise lock it
+  config.mission_control.jobs.http_basic_auth_enabled = false
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
@@ -54,6 +60,10 @@ Rails.application.configure do
 
   # Append comments with runtime information tags to SQL queries in logs.
   config.active_record.query_log_tags_enabled = true
+
+  # Jobs go through Solid Queue, as in production. `dip rails s` runs the worker inside Puma.
+  config.active_job.queue_adapter = :solid_queue
+  config.solid_queue.connects_to = {database: {writing: :queue}}
 
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true

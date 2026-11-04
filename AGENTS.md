@@ -27,6 +27,14 @@ dip bash                                   # shell in the app container
 ```
 
 - `RAILS_ENV` is empty in the containers on purpose, so `bin/rails test` switches to test by itself.
+- Development-only tools under http://localhost:3000: `/jobs` (Mission Control), `/pghero`, `/letter_opener`
+  (every email sent in development lands here) and `/lookbook` (component previews). None is mounted in
+  production.
+- N+1 queries show in a footer on development pages and fail tests (Prosopite). strong_migrations stops unsafe
+  migrations, and runs each migration with lock and statement timeouts.
+- Test helpers (`test/test_helper.rb`): FactoryBot methods (factories in `test/factories/`), WebMock blocking real
+  HTTP (record a needed call once with VCR into `test/cassettes/`), n_plus_one_control's
+  `assert_perform_constant_number_of_queries`, and `with_model` for throwaway tables when testing concerns.
 - System tests (`test/system/`, `ApplicationSystemTestCase`) drive headless Chrome through Cuprite, with
   capybara-lockstep in the layout. The dev image has no Chrome: in Docker they connect to the `chrome` service
   (browserless) through `CHROME_URL`, which only `dip rails test:system` and `dip ci` set (they stop the
@@ -65,10 +73,15 @@ Building blocks and their base classes:
   methods. `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
   skill rather than reading `ENV` or credentials directly.
 - **Feature flags**: Flipper, stored in the database.
-- **Jobs, cache, cable**: the Solid stack on Postgres; production has separate cache/queue/cable databases.
+- **Jobs, cache, cable**: Solid Queue, Cache and Cable on Postgres, each on its own database, in development as
+  in production. `dip rails s` runs the Solid Queue worker inside Puma (`SOLID_QUEUE_IN_PUMA`); tests use the
+  Active Job and Action Cable test adapters.
 - **Frontend**: entry points in `app/javascript/entrypoints/`, Stimulus controllers in
   `app/javascript/controllers/`, loaded in the layout with `vite_javascript_tag`/`vite_stylesheet_tag`.
   There is no importmap.
+- **Metrics and logs**: Yabeda collects Rails, Active Job and Puma metrics; Puma exports them for Prometheus on
+  `:9394/metrics` (not published by compose or Kamal). Processes share them through `tmp/prometheus/`, because
+  Solid Queue workers are forked. Production logs one line per request (Lograge).
 
 ## Planning and reviewing
 
