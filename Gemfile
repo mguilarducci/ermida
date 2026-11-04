@@ -50,7 +50,7 @@ gem "vite_rails"
 # platforms would otherwise fall back silently to an old Bun (0.3.0 / Bun 1.3.8).
 # Ceiling: 0.5.1 calls Rake.load_rakefile whenever Rake is defined, but Rails defines
 # Rake partially, so every boot outside rake crashes. Lift it once that is fixed.
-gem "bundlebun", ">= 0.5", "< 0.5.2"
+gem "bundlebun", ">= 0.5", "< 0.5.1"
 # Serves assets of engines that ship their own (mission_control-jobs requires it even with Vite)
 gem "propshaft"
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
