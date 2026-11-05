@@ -16,8 +16,8 @@ class MagicLink < ApplicationRecord
 
   class << self
     def consume(code)
-      if (sanitized = Code.sanitize(code))
-        active.find_by(code: sanitized)&.consume
+      if (parsed = Code.parse(code))
+        active.find_by(code: parsed.value)&.consume
       end
     end
 
@@ -36,7 +36,7 @@ class MagicLink < ApplicationRecord
 
   def generate_code
     self.code ||= loop do
-      candidate = Code.generate
+      candidate = Code.generate.value
       break candidate unless self.class.exists?(code: candidate)
     end
   end
