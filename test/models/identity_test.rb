@@ -17,11 +17,15 @@ class IdentityTest < ActiveSupport::TestCase
     assert identity.errors.added?(:email_address, :invalid, value: "ana.example.com")
   end
 
-  test "a blank name is rejected" do
-    identity = build(:identity, name: "")
+  test "an identity can be saved without a name, since sign-up asks for it after the code" do
+    assert create(:identity, name: nil).persisted?
+  end
+
+  test "a name longer than 100 characters is rejected" do
+    identity = build(:identity, name: "a" * 101)
 
     assert_not identity.valid?
-    assert identity.errors.added?(:name, :blank)
+    assert identity.errors.added?(:name, :too_long, count: 100)
   end
 
   test "staff defaults to false" do
