@@ -44,6 +44,13 @@ class ApplicationFormTest < ActiveSupport::TestCase
     assert_equal 1, Business.count
   end
 
+  test "a valid form saves even when submitting returns nothing" do
+    form = GreetingForm.new(name: "Padaria")
+    form.define_singleton_method(:submit!) { nil }
+
+    assert form.save
+  end
+
   test "a failure while submitting rolls back everything the form wrote" do
     form = GreetingForm.new(name: "Padaria")
     form.define_singleton_method(:submit!) do

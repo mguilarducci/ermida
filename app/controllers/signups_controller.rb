@@ -6,19 +6,14 @@ class SignupsController < ApplicationController
   rate_limit to: 10, within: 3.minutes, only: :create, with: :rate_limit_exceeded
 
   def new
-    @identity = Identity.new
+    @signup = SignupForm.new
   end
 
   def create
-    @identity = Identity.find_or_create_by_email_address(email_address)
+    @signup = SignupForm.new(signup_params)
 
-    if @identity.persisted?
-      if (magic_link = @identity.create_magic_link(purpose: :sign_up))
-        MagicLinkDelivery.sign_in_instructions(magic_link).deliver_later
-        redirect_to_session_magic_link(magic_link)
-      else
-        redirect_to_fake_session_magic_link(@identity.email_address)
-      end
+    if @signup.save
+      redirect_to_session_magic_link(@signup.identity.email_address, @signup.magic_link)
     else
       render :new, status: :unprocessable_content
     end
@@ -26,7 +21,7 @@ class SignupsController < ApplicationController
 
   private
 
-  def email_address = params.expect(signup: [:email_address])[:email_address]
+  def signup_params = params.expect(signup: [:email_address])
 
   def redirect_signed_in_person_to_account_form
     redirect_to new_account_path if authenticated?

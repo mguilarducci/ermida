@@ -4,7 +4,7 @@
   <div class="card-body">
     <h1 class="card-title"><%= t(".title") %></h1>
 
-    <%= form_with url: session_path do |form| %>
+    <%= form_with model: @sign_in, url: session_path do |form| %>
       <%= form.label :email_address, t(".email_address"), class: "label" %>
       <%= form.email_field :email_address, class: "input", required: true, autofocus: true, autocomplete: "username" %>
 

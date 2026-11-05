@@ -103,10 +103,16 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
-  test "the code never reaches the flash outside development" do
+  test "the code stays off the code page unless the authentication config shows it" do
     request_code
 
     assert_nil flash[:magic_link_code]
+  end
+
+  test "the code page shows the code when the authentication config allows it" do
+    AuthenticationConfig.stub(:show_code_on_page?, true) { request_code }
+
+    assert_equal last_code, flash[:magic_link_code]
   end
 
   test "the 11th code attempt within 15 minutes is refused with a message" do
@@ -138,7 +144,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
   private
 
   def request_code
-    post session_path, params: {email_address: @identity.email_address}
+    post session_path, params: {sign_in: {email_address: @identity.email_address}}
   end
 
   def last_code = @identity.magic_links.last.code

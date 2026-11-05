@@ -5,19 +5,15 @@ module Authentication::ViaMagicLink
   PENDING_AUTHENTICATION_LIFETIME = 1.hour
 
   included do
-    after_action :ensure_magic_link_code_stays_in_development
+    after_action :ensure_magic_link_code_stays_off_the_page
   end
 
   private
 
-  def redirect_to_session_magic_link(magic_link)
-    remember_pending_authentication(magic_link.identity.email_address)
-    flash[:magic_link_code] = magic_link.code if Rails.env.development?
-    redirect_to session_magic_link_path, status: :see_other
-  end
-
-  def redirect_to_fake_session_magic_link(email_address)
+  # Without a magic link (an unknown email, or one past its code limit) the person sees the same page.
+  def redirect_to_session_magic_link(email_address, magic_link)
     remember_pending_authentication(email_address)
+    flash[:magic_link_code] = magic_link.code if magic_link && AuthenticationConfig.show_code_on_page?
     redirect_to session_magic_link_path, status: :see_other
   end
 
@@ -38,9 +34,9 @@ module Authentication::ViaMagicLink
     cookies.delete(:pending_authentication_token)
   end
 
-  def ensure_magic_link_code_stays_in_development
-    if flash[:magic_link_code] && !Rails.env.development?
-      raise "The sign-in code reached the flash outside development"
+  def ensure_magic_link_code_stays_off_the_page
+    if flash[:magic_link_code] && !AuthenticationConfig.show_code_on_page?
+      raise "The sign-in code reached the flash while the code page must not show it"
     end
   end
 end

@@ -8,14 +8,14 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Sign in"
-    assert_select "form[action=?] input[name=email_address]", session_path
+    assert_select "form[action=?] input[name=?]", session_path, "sign_in[email_address]"
   end
 
   test "a known email gets one sign-in code by email and goes to the code page" do
     identity = create(:identity, email_address: "ana@example.com")
 
     assert_enqueued_emails 1 do
-      post session_path, params: {email_address: " Ana@Example.com "}
+      post session_path, params: {sign_in: {email_address: " Ana@Example.com "}}
     end
 
     assert_redirected_to session_magic_link_path
@@ -25,7 +25,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "an unknown email goes to the same code page, with nothing created and no email" do
     assert_no_enqueued_emails do
       assert_no_difference %w[Identity.count MagicLink.count] do
-        post session_path, params: {email_address: "nobody@example.com"}
+        post session_path, params: {sign_in: {email_address: "nobody@example.com"}}
       end
     end
 
@@ -35,7 +35,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "an unknown email shows the same normalized address a known one would" do
-    post session_path, params: {email_address: " Nobody@Example.com "}
+    post session_path, params: {sign_in: {email_address: " Nobody@Example.com "}}
     follow_redirect!
 
     assert_select "p", text: /nobody@example.com/
@@ -43,7 +43,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
   test "a malformed email is treated like an unknown one" do
     assert_no_enqueued_emails do
-      post session_path, params: {email_address: "not an email"}
+      post session_path, params: {sign_in: {email_address: "not an email"}}
     end
 
     assert_redirected_to session_magic_link_path
@@ -61,11 +61,11 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     identity = create(:identity, email_address: "ana@example.com")
     # The same request repeated reads the same rows each time, which Prosopite would report as an N+1.
     Prosopite.pause do
-      5.times { |i| post session_path, params: {email_address: "ana@example.com"}, env: {"REMOTE_ADDR" => "10.0.0.#{i}"} }
+      5.times { |i| post session_path, params: {sign_in: {email_address: "ana@example.com"}}, env: {"REMOTE_ADDR" => "10.0.0.#{i}"} }
     end
 
     assert_no_enqueued_emails do
-      post session_path, params: {email_address: "ana@example.com"}, env: {"REMOTE_ADDR" => "10.0.1.1"}
+      post session_path, params: {sign_in: {email_address: "ana@example.com"}}, env: {"REMOTE_ADDR" => "10.0.1.1"}
     end
 
     assert_redirected_to session_magic_link_path
@@ -75,10 +75,10 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "the 11th email within 3 minutes from one address is refused with a message and sends nothing" do
     create(:identity, email_address: "ana@example.com")
     # The same request ten times reads the same rows each time, which Prosopite would report as an N+1.
-    Prosopite.pause { 10.times { post session_path, params: {email_address: "ana@example.com"} } }
+    Prosopite.pause { 10.times { post session_path, params: {sign_in: {email_address: "ana@example.com"}} } }
 
     assert_no_enqueued_emails do
-      post session_path, params: {email_address: "ana@example.com"}
+      post session_path, params: {sign_in: {email_address: "ana@example.com"}}
     end
 
     assert_redirected_to new_session_path

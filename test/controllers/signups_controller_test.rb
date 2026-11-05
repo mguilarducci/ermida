@@ -80,7 +80,7 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
     identity = create(:identity, email_address: "ana@example.com")
     # The same request repeated reads the same rows each time, which Prosopite would report as an N+1.
     Prosopite.pause do
-      5.times { |i| post session_path, params: {email_address: "ana@example.com"}, env: {"REMOTE_ADDR" => "10.0.0.#{i}"} }
+      5.times { |i| post session_path, params: {sign_in: {email_address: "ana@example.com"}}, env: {"REMOTE_ADDR" => "10.0.0.#{i}"} }
     end
 
     assert_no_enqueued_emails do

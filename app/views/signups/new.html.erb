@@ -5,7 +5,7 @@
     <h1 class="card-title"><%= t(".title") %></h1>
     <p><%= t(".intro") %></p>
 
-    <%= form_with model: @identity, scope: :signup, url: signup_path do |form| %>
+    <%= form_with model: @signup, url: signup_path do |form| %>
       <%= render FormField::Component.new(form:, attribute: :email_address, as: :email_field) %>
 
       <%= form.submit t(".submit"), class: "btn btn-primary" %>

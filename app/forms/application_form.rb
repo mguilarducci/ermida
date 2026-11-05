@@ -1,5 +1,6 @@
 # Base class for form objects: input for one screen that may write several models. A subclass declares its
 # attributes and validations and implements `submit!`; `save` validates, then runs `submit!` in a transaction.
+# `save` is true once that transaction commits, whatever `submit!` returns.
 class ApplicationForm
   include ActiveModel::API
   include ActiveModel::Attributes
@@ -26,6 +27,7 @@ class ApplicationForm
         AfterCommitEverywhere.after_commit { run_callbacks(:commit) }
         run_callbacks(:save) { submit! }
       end
+      true
     else
       false
     end

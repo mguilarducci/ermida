@@ -80,13 +80,14 @@ Building blocks and their base classes:
   signed-out person needs. Sessions belong to an `Identity` (a person), and a `User` is that identity's place in
   one `Account` (a condominium). Only the concern sets `Current` (session, identity, user, account), and nothing
   sets the account yet, so `Current.user` is nil. People sign in, and sign up to create an account, with a
-  6-character code emailed to them (`MagicLink`, `Authentication::ViaMagicLink`); in development the code page
-  also shows the code. The home page (`/`) lists the signed-in person's accounts. Mission Control is kept
+  6-character code emailed to them (`MagicLink`, `Authentication::ViaMagicLink`, with `SignInForm` and
+  `SignupForm` sending it); in development the code page also shows the code (`AuthenticationConfig`, which
+  refuses to load with that on in any other environment). The home page (`/`) lists the signed-in person's accounts. Mission Control is kept
   outside it in development.
 - **Authorization**: `ApplicationPolicy` (Action Policy), which gets the user from the controller's
   `current_user`.
-- **Configuration**: classes in `config/configs/` inheriting `ApplicationConfig` (Anyway Config), read as class
-  methods. `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
+- **Configuration**: classes inheriting `ApplicationConfig` (Anyway Config), read as class methods: in
+  `config/configs/` when boot code reads them, otherwise in `app/configs/` (domain layer, checked by Archspec). `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
   skill rather than reading `ENV` or credentials directly.
 - **Feature flags**: Flipper, stored in the database.
 - **Jobs, cache, cable**: Solid Queue, Cache and Cable on Postgres, each on its own database, in development as
