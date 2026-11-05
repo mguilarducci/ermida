@@ -3,6 +3,12 @@
 <div class="card card-border max-w-md">
   <div class="card-body">
     <h1 class="card-title"><%= t(".title") %></h1>
-    <p><%= t(".unavailable") %></p>
+
+    <%= form_with url: session_path do |form| %>
+      <%= form.label :email_address, t(".email_address"), class: "label" %>
+      <%= form.email_field :email_address, class: "input", required: true, autofocus: true, autocomplete: "username" %>
+
+      <%= form.submit t(".submit"), class: "btn btn-primary" %>
+    <% end %>
   </div>
 </div>
