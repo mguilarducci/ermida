@@ -14,6 +14,10 @@ class Identity < ApplicationRecord
     magic_links.create!(purpose:)
   end
 
+  def accounts
+    Account.where(id: users.active.select(:account_id)).order(:name)
+  end
+
   # Only an active user counts, so a former resident stays out even if a user lost its active flag some other way.
   def user_in(account)
     if account

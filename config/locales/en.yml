@@ -50,6 +50,22 @@ en:
       updated: Business updated.
     destroy:
       destroyed: Business deleted.
+  accounts:
+    index:
+      title: Your accounts
+      empty: You don't have an account yet.
+      new: Create an account
+      sign_out: Sign out
+    new:
+      title: Create an account
+      submit: Create account
+    create:
+      created: Account created.
+  activemodel:
+    attributes:
+      account:
+        name: Account name
+        person_name: Your name
   sessions:
     new:
       title: Sign in

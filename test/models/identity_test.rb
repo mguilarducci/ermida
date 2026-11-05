@@ -67,4 +67,14 @@ class IdentityTest < ActiveSupport::TestCase
 
     assert_equal 0, Session.count
   end
+
+  test "accounts lists the accounts where the identity has an active user, by name" do
+    identity = create(:identity)
+    bravo = create(:user, identity:, account: create(:account, name: "Bravo")).account
+    alpha = create(:user, identity:, account: create(:account, name: "Alpha")).account
+    create(:user, identity:).deactivate
+    create(:account)
+
+    assert_equal [alpha, bravo], identity.accounts.to_a
+  end
 end
