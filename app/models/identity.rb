@@ -1,6 +1,4 @@
-# A person, known by one email address across the whole app, whatever condominiums they belong to.
 class Identity < ApplicationRecord
-  # An identity that still has users cannot be deleted; what deleting a person means is decided with that flow.
   has_many :users, dependent: :restrict_with_exception
   has_many :sessions, dependent: :destroy
 

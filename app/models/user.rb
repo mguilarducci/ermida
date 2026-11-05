@@ -1,4 +1,3 @@
-# An identity's place in one condominium. System users, and users whose person left, have no identity.
 class User < ApplicationRecord
   db_belongs_to :account
   belongs_to :identity, optional: true

@@ -1,4 +1,4 @@
-# Signs a system test's browser in by writing the session cookie, since there is no sign-in form yet.
+# Signs a system test's browser in by writing the session cookie straight into it.
 module SystemSessionTestHelper
   def sign_in_as(identity)
     session = identity.sessions.create!

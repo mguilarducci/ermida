@@ -8,7 +8,6 @@ FactoryBot.define do
       identity { nil }
     end
 
-    # Goes through deactivate, so the factory never builds an inactive user that keeps its identity.
     trait :deactivated do
       after(:create) { |user| user.deactivate }
     end
