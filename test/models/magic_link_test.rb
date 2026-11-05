@@ -26,6 +26,14 @@ class MagicLinkTest < ActiveSupport::TestCase
     assert_equal link, MagicLink.consume(" lo a2b o")
   end
 
+  test "a link that another request already consumed is not consumed again" do
+    link = create(:magic_link)
+    stale_copy = MagicLink.find(link.id)
+    link.consume
+
+    assert_nil stale_copy.consume
+  end
+
   test "an expired link is not consumed and stays in place" do
     link = create(:magic_link)
 

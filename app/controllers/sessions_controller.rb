@@ -13,7 +13,7 @@ class SessionsController < ApplicationController
       MagicLinkDelivery.sign_in_instructions(magic_link).deliver_later
       redirect_to_session_magic_link(magic_link)
     else
-      redirect_to_fake_session_magic_link(email_address)
+      redirect_to_fake_session_magic_link(Identity.normalize_value_for(:email_address, email_address))
     end
   end
 

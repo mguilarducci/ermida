@@ -9,6 +9,16 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
+  test "a code submitted without a pending email is not used and starts no session" do
+    link = @identity.create_magic_link(purpose: :sign_in)
+
+    post session_magic_link_path, params: {code: link.code}
+
+    assert_redirected_to new_session_path
+    assert_equal 0, Session.count
+    assert MagicLink.exists?(link.id)
+  end
+
   test "the code page shows where the code went and asks for it" do
     request_code
 

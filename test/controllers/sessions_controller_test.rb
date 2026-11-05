@@ -34,6 +34,13 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "an unknown email shows the same normalized address a known one would" do
+    post session_path, params: {email_address: " Nobody@Example.com "}
+    follow_redirect!
+
+    assert_select "p", text: /nobody@example.com/
+  end
+
   test "a malformed email is treated like an unknown one" do
     assert_no_enqueued_emails do
       post session_path, params: {email_address: "not an email"}
