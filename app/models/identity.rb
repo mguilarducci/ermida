@@ -27,8 +27,9 @@ class Identity < ApplicationRecord
     end
   end
 
+  # Inside an account's pages acts_as_tenant limits users to that account, so the list lifts that filter.
   def accounts
-    Account.where(id: users.active.select(:account_id)).order(:name)
+    Account.where(id: users.unscope(where: :account_id).active.select(:account_id)).order(:name)
   end
 
   # Only an active user counts, so a former resident stays out even if a user lost its active flag some other way.

@@ -50,12 +50,11 @@ en:
       updated: Business updated.
     destroy:
       destroyed: Business deleted.
-  accounts:
-    index:
-      title: Your accounts
-      empty: You don't have an account yet.
-      new: Create an account
+  landings:
+    show:
+      accounts: Your accounts
       sign_out: Sign out
+  accounts:
     new:
       title: Create an account
       submit: Create account
@@ -91,6 +90,12 @@ en:
       create:
         invalid_code: That code didn't work. Check it, or ask for a new one.
         mismatch: Something went wrong. Please ask for a new code.
+    menus:
+      show:
+        title: Your accounts
+        empty: You don't have an account yet.
+        new: Create an account
+        sign_out: Sign out
   magic_link_mailer:
     sign_in_instructions:
       subject: "Your Ermida code is %{code}"

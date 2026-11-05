@@ -27,4 +27,13 @@ class CurrentTest < ActiveSupport::TestCase
 
     assert_equal user, Current.user
   end
+
+  test "the account keeps users of other accounts out of reach" do
+    user = create(:user)
+    create(:user)
+
+    Current.account = user.account
+
+    assert_equal [user], User.all.to_a
+  end
 end

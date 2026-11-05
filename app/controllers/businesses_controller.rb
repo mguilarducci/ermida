@@ -1,4 +1,6 @@
 class BusinessesController < ApplicationController
+  # Businesses belong to no account yet.
+  disallow_account_scope
   before_action :set_business, only: %i[show edit update destroy]
   verify_authorized
 

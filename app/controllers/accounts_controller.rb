@@ -1,10 +1,6 @@
 class AccountsController < ApplicationController
+  disallow_account_scope
   verify_authorized
-
-  def index
-    authorize!
-    @accounts = Current.identity.accounts.load
-  end
 
   def new
     authorize!
@@ -16,7 +12,7 @@ class AccountsController < ApplicationController
     @form = AccountForm.new(account_params.merge(identity: Current.identity))
 
     if @form.save
-      redirect_to root_path, notice: t(".created")
+      redirect_to root_path(script_name: account_script_name(@form.account)), notice: t(".created")
     else
       render :new, status: :unprocessable_content
     end

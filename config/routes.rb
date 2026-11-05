@@ -10,11 +10,12 @@ Rails.application.routes.draw do
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   resources :businesses
-  resources :accounts, only: %i[index new create]
+  resources :accounts, only: %i[new create]
   resource :signup, only: %i[new create]
   resource :session, only: %i[new create destroy] do
     scope module: :sessions do
       resource :magic_link, only: %i[show create]
+      resource :menu, only: :show
     end
   end
 
@@ -26,5 +27,6 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  root "accounts#index"
+  # Inside an account (/accounts/edificio-aurora/) the root is that account's page; outside one it leads to the menu.
+  root "landings#show"
 end

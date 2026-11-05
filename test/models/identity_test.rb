@@ -78,6 +78,14 @@ class IdentityTest < ActiveSupport::TestCase
     assert_equal [alpha, bravo], identity.accounts.to_a
   end
 
+  test "accounts lists them all also inside one account's pages" do
+    identity = create(:identity)
+    alpha = create(:user, identity:, account: create(:account, name: "Alpha")).account
+    bravo = create(:user, identity:, account: create(:account, name: "Bravo")).account
+
+    ActsAsTenant.with_tenant(alpha) { assert_equal [alpha, bravo], identity.accounts.to_a }
+  end
+
   test "finding or creating by email returns the existing identity for a known address" do
     identity = create(:identity, email_address: "ana@example.com")
 

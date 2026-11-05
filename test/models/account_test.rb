@@ -12,6 +12,14 @@ class AccountTest < ActiveSupport::TestCase
     assert_equal "edit-2", create(:account, name: "Edit").slug
   end
 
+  # Accounts live under /accounts/<slug>/, so a route word there left out of the list would let an account hide
+  # that page. A route added under /accounts/ fails here until its word is reserved.
+  test "every route word under /accounts/ is reserved" do
+    words = Rails.application.routes.routes.filter_map { it.path.spec.to_s[%r{\A/accounts/([a-z0-9_-]+)}, 1] }.uniq
+
+    assert_empty words - Account::RESERVED_SLUGS
+  end
+
   test "renaming keeps the slug" do
     account = create(:account, name: "Edifício Aurora")
 
