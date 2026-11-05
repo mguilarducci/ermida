@@ -1,5 +1,5 @@
 class FormField::Component < ApplicationViewComponent
-  CONTROL_CLASSES = {text_field: "input", text_area: "textarea"}.freeze
+  CONTROL_CLASSES = {text_field: "input", email_field: "input", text_area: "textarea"}.freeze
 
   def initialize(form:, attribute:, as: :text_field)
     @form = form

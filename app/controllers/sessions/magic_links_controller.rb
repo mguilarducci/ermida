@@ -17,7 +17,7 @@ class Sessions::MagicLinksController < ApplicationController
     elsif pending_authentication_matches?(magic_link)
       clear_pending_authentication
       start_new_session_for(magic_link.identity)
-      redirect_to after_authentication_url, status: :see_other
+      redirect_to after_sign_in_url(magic_link), status: :see_other
     else
       clear_pending_authentication
       redirect_to new_session_path, alert: t(".mismatch"), status: :see_other
@@ -34,6 +34,14 @@ class Sessions::MagicLinksController < ApplicationController
 
   def pending_authentication_matches?(magic_link)
     ActiveSupport::SecurityUtils.secure_compare(email_address_pending_authentication, magic_link.identity.email_address)
+  end
+
+  def after_sign_in_url(magic_link)
+    if magic_link.for_sign_up?
+      new_account_path
+    else
+      after_authentication_url
+    end
   end
 
   def rate_limit_exceeded

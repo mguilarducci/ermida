@@ -61,6 +61,12 @@ en:
       submit: Create account
     create:
       created: Account created.
+  signups:
+    new:
+      title: Create an account
+      intro: Enter your email. We'll send you a code to confirm it, then you'll name your account.
+      submit: Email me a code
+      sign_in: Already have an account? Sign in
   activemodel:
     attributes:
       account:
@@ -72,6 +78,7 @@ en:
       title: Sign in
       email_address: Email address
       submit: Email me a code
+      sign_up: New to Ermida? Create an account
     magic_links:
       enter_email: Enter your email address to get a code.
       show:

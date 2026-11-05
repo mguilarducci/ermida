@@ -10,6 +10,18 @@ class Identity < ApplicationRecord
   # Sign-up creates the identity before asking for the name, so the account form requires it instead.
   validates :name, length: {maximum: 100}
 
+  # Two sign-ups racing on one new address both miss the lookup; the one whose insert loses gets the address marked
+  # taken (database_validations turns the unique index error into that), and finds the winner's identity instead.
+  def self.find_or_create_by_email_address(email_address)
+    identity = find_or_create_by(email_address:)
+
+    if identity.errors.of_kind?(:email_address, :taken)
+      find_by!(email_address:)
+    else
+      identity
+    end
+  end
+
   def create_magic_link(purpose:)
     magic_links.create!(purpose:)
   end

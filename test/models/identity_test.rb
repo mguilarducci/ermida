@@ -77,4 +77,24 @@ class IdentityTest < ActiveSupport::TestCase
 
     assert_equal [alpha, bravo], identity.accounts.to_a
   end
+
+  test "finding or creating by email returns the existing identity for a known address" do
+    identity = create(:identity, email_address: "ana@example.com")
+
+    assert_equal identity, Identity.find_or_create_by_email_address(" Ana@Example.com ")
+  end
+
+  test "finding or creating by email creates an identity without a name for a new address" do
+    identity = Identity.find_or_create_by_email_address("ana@example.com")
+
+    assert identity.persisted?
+    assert_nil identity.name
+  end
+
+  test "finding or creating by email returns an unsaved identity with errors for a malformed address" do
+    identity = Identity.find_or_create_by_email_address("not an email")
+
+    assert_not identity.persisted?
+    assert identity.errors.include?(:email_address)
+  end
 end
