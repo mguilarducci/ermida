@@ -54,3 +54,9 @@ en:
     new:
       title: Sign in
       unavailable: Signing in isn't available yet.
+  magic_link_mailer:
+    sign_in_instructions:
+      subject: "Your Ermida code is %{code}"
+      sign_in_intro: "Enter this code on the Ermida page where you asked to sign in:"
+      sign_up_intro: "Enter this code on the Ermida page to finish creating your account:"
+      expiry: "This code works once, for the next 15 minutes."
