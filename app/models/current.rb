@@ -13,7 +13,6 @@ class Current < ActiveSupport::CurrentAttributes
     self.user = identity&.user_in(account)
   end
 
-  # Nothing sets the account yet; the condominium in the URL will, and then the user follows.
   def account=(account)
     super
     self.user = identity&.user_in(account)
