@@ -70,6 +70,9 @@ Building blocks and their base classes:
 
 - **Components**: `ApplicationViewComponent` (view_component-contrib). Previews inherit
   `ApplicationViewComponentPreview`, can sit next to their component, and show in Lookbook.
+- **Forms**: `ApplicationForm` (`app/forms/`), for input from one screen that writes several models. A form
+  declares attributes and validations and implements `submit!`; `save` validates, then runs `submit!` in a
+  transaction. `AccountForm` is the example.
 - **Notifications**: `ApplicationDelivery` (Active Delivery). `PostsDelivery.published(post)` fans out to
   `PostsMailer.published` and any other channel.
 - **Authentication**: the `Authentication` concern in `ApplicationController` requires a session on every page;

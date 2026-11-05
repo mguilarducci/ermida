@@ -1,7 +1,4 @@
-class AccountForm
-  include ActiveModel::Model
-  include ActiveModel::Attributes
-
+class AccountForm < ApplicationForm
   attribute :name, :string
   attribute :person_name, :string
 
@@ -11,30 +8,21 @@ class AccountForm
   validates :name, presence: true
   validates :person_name, presence: true, if: :person_name_needed?
 
-  def self.model_name = ActiveModel::Name.new(self, nil, "Account")
-
   def person_name_needed? = identity.name.blank?
 
   def save
-    if valid?
-      create_account
-    else
-      false
-    end
-  end
-
-  private
-
-  def create_account
-    ActiveRecord::Base.transaction do
-      identity.update!(name: person_name) if person_name_needed?
-      @account = Account.create_with_owner(name:, owner: identity)
-    end
-    true
+    super
   rescue ActiveRecord::RecordInvalid => error
     identity.restore_attributes
     copy_errors_from(error.record)
     false
+  end
+
+  private
+
+  def submit!
+    identity.update!(name: person_name) if person_name_needed?
+    @account = Account.create_with_owner(name:, owner: identity)
   end
 
   def copy_errors_from(record)
