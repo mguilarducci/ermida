@@ -11,7 +11,6 @@ module Authentication
       skip_before_action :require_authentication, **options
     end
 
-    # For pages only a signed-out person needs, such as sign-in: someone already signed in goes home instead.
     def require_unauthenticated_access(**options)
       allow_unauthenticated_access(**options)
       before_action :redirect_signed_in_person, **options

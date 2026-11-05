@@ -7,7 +7,6 @@ class Identity < ApplicationRecord
 
   validates :email_address, presence: true, format: {with: URI::MailTo::EMAIL_REGEXP}
   validates_db_uniqueness_of :email_address
-  # Sign-up creates the identity before asking for the name, so the account form requires it instead.
   validates :name, length: {maximum: 100}
 
   # Two sign-ups racing on one new address both miss the lookup; the one whose insert loses gets the address marked

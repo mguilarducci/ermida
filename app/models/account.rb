@@ -14,7 +14,6 @@ class Account < ApplicationRecord
   validate :name_must_produce_a_slug
   validates_db_uniqueness_of :slug
 
-  # The system user is the account's own automated actor; the owner is the person who created it.
   def self.create_with_owner(name:, owner:)
     transaction do
       create!(name:).tap do |account|

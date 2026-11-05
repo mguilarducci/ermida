@@ -1,4 +1,3 @@
-# A sign-in code emailed to a person. It works once, for a short time, and is typed rather than clicked.
 class MagicLink < ApplicationRecord
   EXPIRATION_TIME = 15.minutes
 

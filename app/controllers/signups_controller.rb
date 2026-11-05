@@ -25,12 +25,11 @@ class SignupsController < ApplicationController
 
   def email_address = params.expect(signup: [:email_address])[:email_address]
 
-  # Someone already signed in has a verified email, so they skip straight to creating an account.
   def redirect_signed_in_person_to_account_form
     redirect_to new_account_path if authenticated?
   end
 
   def rate_limit_exceeded
-    redirect_to new_signup_path, alert: t("sessions.rate_limited")
+    redirect_to new_signup_path, alert: t("sessions.rate_limited"), status: :see_other
   end
 end

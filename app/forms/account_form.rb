@@ -1,5 +1,3 @@
-# The form that creates an Account: its name, and the person's own name when they have none yet, as happens right
-# after signing up.
 class AccountForm
   include ActiveModel::Model
   include ActiveModel::Attributes

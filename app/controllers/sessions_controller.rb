@@ -27,6 +27,6 @@ class SessionsController < ApplicationController
   def email_address = params.expect(:email_address)
 
   def rate_limit_exceeded
-    redirect_to new_session_path, alert: t("sessions.rate_limited")
+    redirect_to new_session_path, alert: t("sessions.rate_limited"), status: :see_other
   end
 end

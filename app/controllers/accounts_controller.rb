@@ -3,7 +3,7 @@ class AccountsController < ApplicationController
 
   def index
     authorize!
-    @accounts = Current.identity.accounts
+    @accounts = Current.identity.accounts.load
   end
 
   def new
