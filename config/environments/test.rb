@@ -21,6 +21,9 @@ Rails.application.configure do
   # Show full error reports.
   config.consider_all_requests_local = true
   config.cache_store = :null_store
+  # Rate limits count requests in the controller cache, which must remember them for the limits to trip in tests.
+  # Integration tests clear it before each test.
+  config.action_controller.cache_store = :memory_store
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable

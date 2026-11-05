@@ -14,6 +14,15 @@ class Account < ApplicationRecord
   validate :name_must_produce_a_slug
   validates_db_uniqueness_of :slug
 
+  def self.create_with_owner(name:, owner:)
+    transaction do
+      create!(name:).tap do |account|
+        account.users.create!(role: :system)
+        account.users.create!(role: :owner, identity: owner, verified_at: Time.current)
+      end
+    end
+  end
+
   private
 
   def name_must_produce_a_slug

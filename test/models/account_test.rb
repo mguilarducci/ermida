@@ -44,4 +44,25 @@ class AccountTest < ActiveSupport::TestCase
   test "the id is a UUID" do
     assert_match(/\A\h{8}-\h{4}-7\h{3}-\h{4}-\h{12}\z/, create(:account).id)
   end
+
+  test "creating with an owner adds a system user and the owner, verified" do
+    identity = create(:identity)
+
+    account = Account.create_with_owner(name: "Edifício Aurora", owner: identity)
+
+    assert account.persisted?
+    assert_equal 1, account.users.system.count
+    assert_nil account.users.system.first.identity
+    owner = account.users.owner.sole
+    assert_equal identity, owner.identity
+    assert owner.verified_at
+  end
+
+  test "creating with an owner and a blank name raises and creates nothing" do
+    identity = create(:identity)
+
+    assert_raises(ActiveRecord::RecordInvalid) { Account.create_with_owner(name: " ", owner: identity) }
+    assert_equal 0, Account.count
+    assert_equal 0, User.count
+  end
 end

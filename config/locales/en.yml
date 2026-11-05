@@ -50,7 +50,50 @@ en:
       updated: Business updated.
     destroy:
       destroyed: Business deleted.
+  accounts:
+    index:
+      title: Your accounts
+      empty: You don't have an account yet.
+      new: Create an account
+      sign_out: Sign out
+    new:
+      title: Create an account
+      submit: Create account
+    create:
+      created: Account created.
+  signups:
+    new:
+      title: Create an account
+      intro: Enter your email. We'll send you a code to confirm it, then you'll name your account.
+      submit: Email me a code
+      sign_in: Already have an account? Sign in
+  activemodel:
+    attributes:
+      account:
+        name: Account name
+        person_name: Your name
   sessions:
+    rate_limited: Too many attempts. Try again in a few minutes.
     new:
       title: Sign in
-      unavailable: Signing in isn't available yet.
+      email_address: Email address
+      submit: Email me a code
+      sign_up: New to Ermida? Create an account
+    magic_links:
+      enter_email: Enter your email address to get a code.
+      show:
+        title: Check your email
+        sent_to: "If %{email_address} has an Ermida account, we sent it a 6-character code. Enter it below."
+        development_code: "Development only: the code is %{code}"
+        code: Code
+        submit: Sign in
+        start_over: Use a different email
+      create:
+        invalid_code: That code didn't work. Check it, or ask for a new one.
+        mismatch: Something went wrong. Please ask for a new code.
+  magic_link_mailer:
+    sign_in_instructions:
+      subject: "Your Ermida code is %{code}"
+      sign_in_intro: "Enter this code on the Ermida page where you asked to sign in:"
+      sign_up_intro: "Enter this code on the Ermida page to finish creating your account:"
+      expiry: "This code works once, for the next 15 minutes."

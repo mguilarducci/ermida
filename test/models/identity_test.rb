@@ -17,11 +17,15 @@ class IdentityTest < ActiveSupport::TestCase
     assert identity.errors.added?(:email_address, :invalid, value: "ana.example.com")
   end
 
-  test "a blank name is rejected" do
-    identity = build(:identity, name: "")
+  test "an identity can be saved without a name, since sign-up asks for it after the code" do
+    assert create(:identity, name: nil).persisted?
+  end
+
+  test "a name longer than 100 characters is rejected" do
+    identity = build(:identity, name: "a" * 101)
 
     assert_not identity.valid?
-    assert identity.errors.added?(:name, :blank)
+    assert identity.errors.added?(:name, :too_long, count: 100)
   end
 
   test "staff defaults to false" do
@@ -62,5 +66,35 @@ class IdentityTest < ActiveSupport::TestCase
     identity.destroy!
 
     assert_equal 0, Session.count
+  end
+
+  test "accounts lists the accounts where the identity has an active user, by name" do
+    identity = create(:identity)
+    bravo = create(:user, identity:, account: create(:account, name: "Bravo")).account
+    alpha = create(:user, identity:, account: create(:account, name: "Alpha")).account
+    create(:user, identity:).deactivate
+    create(:account)
+
+    assert_equal [alpha, bravo], identity.accounts.to_a
+  end
+
+  test "finding or creating by email returns the existing identity for a known address" do
+    identity = create(:identity, email_address: "ana@example.com")
+
+    assert_equal identity, Identity.find_or_create_by_email_address(" Ana@Example.com ")
+  end
+
+  test "finding or creating by email creates an identity without a name for a new address" do
+    identity = Identity.find_or_create_by_email_address("ana@example.com")
+
+    assert identity.persisted?
+    assert_nil identity.name
+  end
+
+  test "finding or creating by email returns an unsaved identity with errors for a malformed address" do
+    identity = Identity.find_or_create_by_email_address("not an email")
+
+    assert_not identity.persisted?
+    assert identity.errors.include?(:email_address)
   end
 end

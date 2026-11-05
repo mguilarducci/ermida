@@ -217,6 +217,8 @@ group :test do
   gem "with_model"
   # N+1 regression assertions
   gem "n_plus_one_control"
+  # `stub`, which Minitest 6 moved out of minitest itself
+  gem "minitest-mock"
 
   # Block real HTTP and record/replay it
   gem "webmock"

@@ -37,6 +37,8 @@ dip bash                                   # shell in the app container
   `assert_perform_constant_number_of_queries`, and `with_model` for throwaway tables when testing concerns.
   Every page needs a session, so controller tests call `sign_in_as(identity)` (`test/test_helpers/`) and
   system tests call their own `sign_in_as(identity)`, which writes the session cookie into the browser.
+  Rate limits count in the controller cache, a memory store in tests that integration tests clear before each
+  test; a test that repeats one request to trip a limit wraps the repeats in `Prosopite.pause`.
 - System tests (`test/system/`, `ApplicationSystemTestCase`) drive headless Chrome through Cuprite, with
   capybara-lockstep in the layout. The dev image has no Chrome: in Docker they connect to the `chrome` service
   (browserless) through `CHROME_URL`, which only `dip rails test:system` and `dip ci` set (they stop the
@@ -68,17 +70,24 @@ Building blocks and their base classes:
 
 - **Components**: `ApplicationViewComponent` (view_component-contrib). Previews inherit
   `ApplicationViewComponentPreview`, can sit next to their component, and show in Lookbook.
+- **Forms**: `ApplicationForm` (`app/forms/`), for input from one screen that writes several models. A form
+  declares attributes and validations and implements `submit!`; `save` validates, then runs `submit!` in a
+  transaction. `AccountForm` is the example.
 - **Notifications**: `ApplicationDelivery` (Active Delivery). `PostsDelivery.published(post)` fans out to
   `PostsMailer.published` and any other channel.
 - **Authentication**: the `Authentication` concern in `ApplicationController` requires a session on every page;
-  controllers opt out with `allow_unauthenticated_access`. Sessions belong to an `Identity` (a person), and a
-  `User` is that identity's place in one `Account` (a condominium). Only the concern sets `Current` (session,
-  identity, user, account), and nothing sets the account yet, so `Current.user` is nil. Nobody can sign in
-  yet: the sign-in page is a placeholder. Mission Control is kept outside it in development.
+  controllers opt out with `allow_unauthenticated_access`, or `require_unauthenticated_access` for pages only a
+  signed-out person needs. Sessions belong to an `Identity` (a person), and a `User` is that identity's place in
+  one `Account` (a condominium). Only the concern sets `Current` (session, identity, user, account), and nothing
+  sets the account yet, so `Current.user` is nil. People sign in, and sign up to create an account, with a
+  6-character code emailed to them (`MagicLink`, `Authentication::ViaMagicLink`, with `SignInForm` and
+  `SignupForm` sending it); in development the code page also shows the code (`AuthenticationConfig`, which
+  refuses to load with that on in any other environment). The home page (`/`) lists the signed-in person's accounts. Mission Control is kept
+  outside it in development.
 - **Authorization**: `ApplicationPolicy` (Action Policy), which gets the user from the controller's
   `current_user`.
-- **Configuration**: classes in `config/configs/` inheriting `ApplicationConfig` (Anyway Config), read as class
-  methods. `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
+- **Configuration**: classes inheriting `ApplicationConfig` (Anyway Config), read as class methods: in
+  `config/configs/` when boot code reads them, otherwise in `app/configs/` (domain layer, checked by Archspec). `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
   skill rather than reading `ENV` or credentials directly.
 - **Feature flags**: Flipper, stored in the database.
 - **Jobs, cache, cable**: Solid Queue, Cache and Cable on Postgres, each on its own database, in development as

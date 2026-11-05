@@ -1,6 +1,7 @@
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
+require "minitest/mock"
 require_relative "test_helpers/session_test_helper"
 require "webmock/minitest"
 require "vcr"
@@ -46,4 +47,8 @@ module ActiveSupport
 
     # Add more helper methods to be used by all tests here...
   end
+end
+
+ActiveSupport.on_load(:action_dispatch_integration_test) do
+  setup { ActionController::Base.cache_store.clear }
 end

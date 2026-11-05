@@ -10,6 +10,11 @@ module Authentication
     def allow_unauthenticated_access(**options)
       skip_before_action :require_authentication, **options
     end
+
+    def require_unauthenticated_access(**options)
+      allow_unauthenticated_access(**options)
+      before_action :redirect_signed_in_person, **options
+    end
   end
 
   private
@@ -30,13 +35,21 @@ module Authentication
     Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
   end
 
-  # The stored path is where signing in will return to, once there is a way to sign in. It lives in the
+  # The stored path is where signing in returns to. It is always a path inside the app. It lives in the
   # cookie session, which overflows past 4 KB, so a long URL is not remembered rather than turned into a 500.
   def request_authentication
     if request.get? && request.fullpath.bytesize <= 1.kilobyte
       session[:return_to_after_authenticating] = request.fullpath
     end
     redirect_to new_session_path
+  end
+
+  def redirect_signed_in_person
+    redirect_to root_path if authenticated?
+  end
+
+  def after_authentication_url
+    session.delete(:return_to_after_authenticating) || root_path
   end
 
   def start_new_session_for(identity)
