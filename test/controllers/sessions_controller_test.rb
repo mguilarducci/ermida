@@ -57,6 +57,21 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "past 5 codes in 15 minutes for one email, more requests from other addresses look the same and send nothing" do
+    identity = create(:identity, email_address: "ana@example.com")
+    # The same request repeated reads the same rows each time, which Prosopite would report as an N+1.
+    Prosopite.pause do
+      5.times { |i| post session_path, params: {email_address: "ana@example.com"}, env: {"REMOTE_ADDR" => "10.0.0.#{i}"} }
+    end
+
+    assert_no_enqueued_emails do
+      post session_path, params: {email_address: "ana@example.com"}, env: {"REMOTE_ADDR" => "10.0.1.1"}
+    end
+
+    assert_redirected_to session_magic_link_path
+    assert_equal 5, identity.magic_links.count
+  end
+
   test "the 11th email within 3 minutes from one address is refused with a message and sends nothing" do
     create(:identity, email_address: "ana@example.com")
     # The same request ten times reads the same rows each time, which Prosopite would report as an N+1.

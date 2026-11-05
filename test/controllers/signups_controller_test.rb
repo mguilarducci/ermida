@@ -76,6 +76,21 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", new_signup_path
   end
 
+  test "sign-up codes count toward the same 5-per-15-minutes limit as sign-in codes" do
+    identity = create(:identity, email_address: "ana@example.com")
+    # The same request repeated reads the same rows each time, which Prosopite would report as an N+1.
+    Prosopite.pause do
+      5.times { |i| post session_path, params: {email_address: "ana@example.com"}, env: {"REMOTE_ADDR" => "10.0.0.#{i}"} }
+    end
+
+    assert_no_enqueued_emails do
+      post signup_path, params: {signup: {email_address: "ana@example.com"}}, env: {"REMOTE_ADDR" => "10.0.1.1"}
+    end
+
+    assert_redirected_to session_magic_link_path
+    assert_equal 0, identity.magic_links.for_sign_up.count
+  end
+
   test "the 11th sign-up within 3 minutes from one address is refused with a message and sends nothing" do
     # The same request ten times reads the same rows each time, which Prosopite would report as an N+1.
     Prosopite.pause { 10.times { post signup_path, params: {signup: {email_address: "ana@example.com"}} } }

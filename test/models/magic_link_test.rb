@@ -69,4 +69,25 @@ class MagicLinkTest < ActiveSupport::TestCase
     assert_not MagicLink.exists?(expired.id)
     assert MagicLink.exists?(active.id)
   end
+
+  test "an identity gets at most 5 codes in 15 minutes" do
+    identity = create(:identity)
+    # Repeating the same call reads the same rows each time, which Prosopite would report as an N+1.
+    Prosopite.pause { 5.times { assert identity.create_magic_link(purpose: :sign_in) } }
+
+    assert_nil identity.create_magic_link(purpose: :sign_up)
+    assert_equal 5, identity.magic_links.count
+
+    travel 16.minutes do
+      assert identity.create_magic_link(purpose: :sign_in)
+    end
+  end
+
+  test "used codes do not count toward the limit" do
+    identity = create(:identity)
+    # Repeating the same call reads the same rows each time, which Prosopite would report as an N+1.
+    Prosopite.pause { 5.times { identity.create_magic_link(purpose: :sign_in).consume } }
+
+    assert identity.create_magic_link(purpose: :sign_in)
+  end
 end

@@ -22,7 +22,9 @@ class Identity < ApplicationRecord
   end
 
   def create_magic_link(purpose:)
-    magic_links.create!(purpose:)
+    if magic_links.recent.count < MagicLink::ISSUE_LIMIT
+      magic_links.create!(purpose:)
+    end
   end
 
   def accounts

@@ -63,6 +63,7 @@ Because an email belongs to only one Identity, the real owner would then be lock
 - **One person may create several Accounts, and a signed-in person skips straight to the form.** Governs R14. (session-settled: user-approved — chosen over one Account per person, which would force a síndico of two buildings to use two emails)
 - **The product calls it an "account".** The pages say "account", never "condomínio". (session-settled: user-directed — the user rejected a "Cadastrar condomínio" page: "tamo tratando como account")
 - **The form asks for the Account's name, unlike Fizzy, which generates it from the person's name.** Governs R12. (session-settled: user-approved — shown in the scoping synthesis and confirmed; a condominium named after its síndico would be wrong)
+- **Codes and guesses are also limited per email, unlike Fizzy.** Governs R7. (session-settled: user-directed — chosen over keeping Fizzy's per-IP limits only and over also binding each code to the browser that requested it: with many addresses an attacker could pile up live codes for one person and guess them)
 - **Joining an Account through Fizzy's join link is out of this work.** It gets its own brainstorm, following Fizzy. (session-settled: user-directed — chosen over bringing it into this work: "Essa tarefa agora é só pro cadastro de account")
 
 ### Requirements
@@ -75,7 +76,7 @@ Because an email belongs to only one Identity, the real owner would then be lock
 - R4. A wrong, used or expired code returns to the code page with an error and starts no session.
 - R5. Expired codes are removed from storage periodically.
 - R6. In development, the code page also shows the code. It never shows it in any other environment.
-- R7. Attempts are limited per IP: 10 email submissions per 3 minutes on each of the sign-in and sign-up pages, and 10 code entries per 15 minutes.
+- R7. Attempts are limited per IP: 10 email submissions per 3 minutes on each of the sign-in and sign-up pages, and 10 code entries per 15 minutes. They are also limited per email: at most 5 codes per 15 minutes across sign-in and sign-up, past which the page looks the same and no code is sent, and 10 code entries per 15 minutes.
 
 **Sign-in**
 
@@ -514,11 +515,6 @@ The Product Contract's Scope Boundaries govern. These concerns were considered a
 These are review items left for the author. They do not block implementation.
 
 ### From 2026-11-05 review
-
-- **Someone with many IP addresses can guess a chosen person's code** — Requirements, attempt limits per IP, and KTD1 (P1, security-lens, confidence 75)
-
-  An attacker can take over a chosen person's Identity by spreading requests across many IPs. The limits are per IP, nothing caps codes per email, and earlier codes stay valid. So an attacker can keep thousands of codes active for one email while guessing from many addresses. With about 1,000 proxy IPs, a code is likely guessed within an hour, and anyone can flood any inbox with code emails. Fizzy has the same gap, so closing it departs from "igual ao Fizzy".
-  Change: Add a cap per email address, shared by the sign-in and sign-up pages (for example 5 codes per email per 15 minutes). Past the cap, the page shows the same "check your email" response and creates no code. Add tests showing that a sixth request for one email from different IPs creates no code and sends no email.
 
 - **A síndico who already has an Account sees no way to create another** — Home page, U4 (P2, design-lens, confidence 75)
 

@@ -13,9 +13,12 @@ class SignupsController < ApplicationController
     @identity = Identity.find_or_create_by_email_address(email_address)
 
     if @identity.persisted?
-      magic_link = @identity.create_magic_link(purpose: :sign_up)
-      MagicLinkDelivery.sign_in_instructions(magic_link).deliver_later
-      redirect_to_session_magic_link(magic_link)
+      if (magic_link = @identity.create_magic_link(purpose: :sign_up))
+        MagicLinkDelivery.sign_in_instructions(magic_link).deliver_later
+        redirect_to_session_magic_link(magic_link)
+      else
+        redirect_to_fake_session_magic_link(@identity.email_address)
+      end
     else
       render :new, status: :unprocessable_content
     end

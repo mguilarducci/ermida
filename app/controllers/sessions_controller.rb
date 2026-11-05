@@ -8,8 +8,9 @@ class SessionsController < ApplicationController
   end
 
   def create
-    if (identity = Identity.find_by(email_address:))
-      magic_link = identity.create_magic_link(purpose: :sign_in)
+    identity = Identity.find_by(email_address:)
+
+    if (magic_link = identity&.create_magic_link(purpose: :sign_in))
       MagicLinkDelivery.sign_in_instructions(magic_link).deliver_later
       redirect_to_session_magic_link(magic_link)
     else

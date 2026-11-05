@@ -1,5 +1,8 @@
 class MagicLink < ApplicationRecord
   EXPIRATION_TIME = 15.minutes
+  # Caps how many codes an attacker can make live for one person, whatever number of addresses they use.
+  ISSUE_LIMIT = 5
+  ISSUE_WINDOW = 15.minutes
 
   db_belongs_to :identity
 
@@ -7,6 +10,7 @@ class MagicLink < ApplicationRecord
 
   scope :active, -> { where(expires_at: Time.current..) }
   scope :stale, -> { where(expires_at: ...Time.current) }
+  scope :recent, -> { where(created_at: ISSUE_WINDOW.ago..) }
 
   before_validation :generate_code, :set_expiration, on: :create
 

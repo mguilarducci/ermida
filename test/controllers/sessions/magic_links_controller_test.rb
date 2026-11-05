@@ -121,6 +121,20 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, Session.count
   end
 
+  test "the 11th code attempt for one email within 15 minutes is refused even from different addresses" do
+    request_code
+    # The same request repeated reads the same rows each time, which Prosopite would report as an N+1.
+    Prosopite.pause do
+      10.times { |i| post session_magic_link_path, params: {code: "ZZZZZZ"}, env: {"REMOTE_ADDR" => "10.0.0.#{i}"} }
+    end
+
+    post session_magic_link_path, params: {code: last_code}, env: {"REMOTE_ADDR" => "10.0.1.1"}
+
+    assert_redirected_to session_magic_link_path
+    assert_equal "Too many attempts. Try again in a few minutes.", flash[:alert]
+    assert_equal 0, Session.count
+  end
+
   private
 
   def request_code

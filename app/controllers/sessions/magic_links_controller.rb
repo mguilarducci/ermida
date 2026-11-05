@@ -3,6 +3,8 @@ class Sessions::MagicLinksController < ApplicationController
 
   require_unauthenticated_access
   rate_limit to: 10, within: 15.minutes, only: :create, with: :rate_limit_exceeded
+  rate_limit to: 10, within: 15.minutes, only: :create, with: :rate_limit_exceeded, name: "per-email",
+    by: -> { email_address_pending_authentication.to_s }
   before_action :require_pending_authentication
 
   def show
