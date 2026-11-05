@@ -1,6 +1,8 @@
 require "application_system_test_case"
 
 class BusinessesTest < ApplicationSystemTestCase
+  setup { sign_in_as(create(:identity)) }
+
   test "creating, renaming and deleting a business" do
     visit businesses_path
     click_on "New business"

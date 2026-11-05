@@ -4,6 +4,8 @@ require "action_policy/test_helper"
 class BusinessesControllerTest < ActionDispatch::IntegrationTest
   include ActionPolicy::TestHelper
 
+  setup { sign_in_as(create(:identity)) }
+
   test "index lists businesses alphabetically, each linking to its slug" do
     create(:business, name: "Bravo")
     create(:business, name: "Alpha")
