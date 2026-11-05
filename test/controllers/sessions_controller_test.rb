@@ -32,6 +32,12 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
+  test "a very long URL without a session still redirects to the sign-in page" do
+    get businesses_path(q: "x" * 5000)
+
+    assert_redirected_to new_session_path
+  end
+
   test "a cookie pointing at a deleted session counts as signed out" do
     sign_in_as(create(:identity))
     Session.delete_all

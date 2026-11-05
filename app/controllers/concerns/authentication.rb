@@ -30,9 +30,12 @@ module Authentication
     Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
   end
 
-  # The stored URL is where signing in will return to, once there is a way to sign in.
+  # The stored path is where signing in will return to, once there is a way to sign in. It lives in the
+  # cookie session, which overflows past 4 KB, so a long URL is not remembered rather than turned into a 500.
   def request_authentication
-    session[:return_to_after_authenticating] = request.url
+    if request.get? && request.fullpath.bytesize <= 1.kilobyte
+      session[:return_to_after_authenticating] = request.fullpath
+    end
     redirect_to new_session_path
   end
 
