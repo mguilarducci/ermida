@@ -78,14 +78,22 @@ Building blocks and their base classes:
 - **Authentication**: the `Authentication` concern in `ApplicationController` requires a session on every page;
   controllers opt out with `allow_unauthenticated_access`, or `require_unauthenticated_access` for pages only a
   signed-out person needs. Sessions belong to an `Identity` (a person), and a `User` is that identity's place in
-  one `Account` (a condominium). Only the concern sets `Current` (session, identity, user, account), and nothing
-  sets the account yet, so `Current.user` is nil. People sign in, and sign up to create an account, with a
+  one `Account` (a condominium). An account's pages live under `/accounts/<slug>/` (`/accounts/edificio-aurora/...`):
+  the `AccountSlug::Extractor` middleware (`config/initializers/account_slug.rb`) moves that prefix into
+  `SCRIPT_NAME`, so url helpers keep it inside an account and `script_name: nil` leaves it. The `AccountScoping`
+  concern turns the slug into `Current.account` and requires one on every page by default; pages outside any
+  account (sign-in, sign-up, the account menu at `/session/menu`) declare `disallow_account_scope`. A new route
+  under `/accounts/` needs its word in `Account::RESERVED_SLUGS`, which a test checks. Only these two concerns set
+  `Current` (session, identity, user, account); `Current.account` also scopes models declared with
+  `acts_as_tenant :account` (today `User`). People sign in, and sign up to create an account, with a
   6-character code emailed to them (`MagicLink`, `Authentication::ViaMagicLink`, with `SignInForm` and
   `SignupForm` sending it); in development the code page also shows the code (`AuthenticationConfig`, which
-  refuses to load with that on in any other environment). The home page (`/`) lists the signed-in person's accounts. Mission Control is kept
-  outside it in development.
+  refuses to load with that on in any other environment). Outside an account, `/` leads to the account menu,
+  which goes straight into the account when the person has only one. Mission Control is kept outside it in
+  development.
 - **Authorization**: `ApplicationPolicy` (Action Policy), which gets the user from the controller's
-  `current_user`.
+  `current_user`: the person's active user in the account of the URL, nil outside one. The `Authorization`
+  concern lets into an account only those `AccountPolicy#show?` allows, and sends anyone else to the menu.
 - **Configuration**: classes inheriting `ApplicationConfig` (Anyway Config), read as class methods: in
   `config/configs/` when boot code reads them, otherwise in `app/configs/` (domain layer, checked by Archspec). `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
   skill rather than reading `ENV` or credentials directly.

@@ -58,8 +58,9 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
     account = Account.find_by!(name: "Edifício Aurora")
     assert_equal "ana@example.com", account.users.owner.sole.identity.email_address
     assert_equal 1, account.users.system.count
+    assert_redirected_to "/accounts/edificio-aurora/"
     follow_redirect!
-    assert_select "li", text: "Edifício Aurora"
+    assert_select "h1", text: "Edifício Aurora"
   end
 
   test "a signed-in person opening the sign-up page goes straight to the account form" do

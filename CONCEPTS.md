@@ -11,7 +11,7 @@ A Business's name is required and need not be unique, and it must contain Latin 
 
 ## Account
 
-A condominium: the space where residents, service providers and the people who run it act together. Each Account has a name and a slug derived from the name once, at creation, following the same rules as a Business slug.
+A condominium: the space where residents, service providers and the people who run it act together. Each Account has a name and a slug derived from the name once, at creation, following the same rules as a Business slug. The Account's pages live under `/accounts/` followed by its slug, and only the Account's active Users get in.
 *Avoid:* tenant, building
 
 ## Identity

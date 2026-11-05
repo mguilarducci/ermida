@@ -1,6 +1,7 @@
 class SignupsController < ApplicationController
   include Authentication::ViaMagicLink
 
+  disallow_account_scope
   allow_unauthenticated_access
   before_action :redirect_signed_in_person_to_account_form
   rate_limit to: 10, within: 3.minutes, only: :create, with: :rate_limit_exceeded

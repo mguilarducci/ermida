@@ -1,5 +1,6 @@
 class User < ApplicationRecord
-  db_belongs_to :account
+  # Inside an account's pages, users of other accounts are out of reach.
+  acts_as_tenant :account
   belongs_to :identity, optional: true
 
   enum :role, %w[member provider admin owner system].index_by(&:itself), default: :member, validate: true

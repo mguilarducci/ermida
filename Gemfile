@@ -94,6 +94,8 @@ gem "after_commit_everywhere", "~> 1.6"
 gem "database_validations", "~> 2.1"
 # Human-readable slugs in URLs [https://github.com/norman/friendly_id]
 gem "friendly_id", "~> 5.7"
+# Scopes models that belong to an account to the account in the URL [https://github.com/ErwinM/acts_as_tenant]
+gem "acts_as_tenant", "~> 2.2"
 
 # ==============================================================================
 # Database operations

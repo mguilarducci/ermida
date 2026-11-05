@@ -18,7 +18,8 @@ class SignupsTest < ApplicationSystemTestCase
     click_on "Create account"
 
     assert_text "Account created."
-    assert_selector "li", text: "Edifício Aurora"
+    assert_current_path "/accounts/edificio-aurora/"
+    assert_selector "h1", text: "Edifício Aurora"
 
     click_on "Sign out"
 

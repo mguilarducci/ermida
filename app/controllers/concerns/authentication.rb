@@ -9,6 +9,7 @@ module Authentication
   class_methods do
     def allow_unauthenticated_access(**options)
       skip_before_action :require_authentication, **options
+      allow_unauthorized_access(**options)
     end
 
     def require_unauthenticated_access(**options)
@@ -41,15 +42,15 @@ module Authentication
     if request.get? && request.fullpath.bytesize <= 1.kilobyte
       session[:return_to_after_authenticating] = request.fullpath
     end
-    redirect_to new_session_path
+    redirect_to new_session_path(script_name: nil)
   end
 
   def redirect_signed_in_person
-    redirect_to root_path if authenticated?
+    redirect_to root_path(script_name: nil) if authenticated?
   end
 
   def after_authentication_url
-    session.delete(:return_to_after_authenticating) || root_path
+    session.delete(:return_to_after_authenticating) || root_path(script_name: nil)
   end
 
   def start_new_session_for(identity)
