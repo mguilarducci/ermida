@@ -46,8 +46,10 @@ Rails.application.configure do
   # Sent emails are kept and shown at /letter_opener
   config.action_mailer.delivery_method = :letter_opener_web
 
-  # Mission Control (/jobs) is only mounted in development; its HTTP basic auth would otherwise lock it
+  # Mission Control (/jobs) is only mounted in development. Its HTTP basic auth would lock it, and inheriting
+  # ApplicationController would put it behind the app's sign-in.
   config.mission_control.jobs.http_basic_auth_enabled = false
+  config.mission_control.jobs.base_controller_class = "ActionController::Base"
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

@@ -1,5 +1,5 @@
 class BusinessPolicy < ApplicationPolicy
-  # Anyone may manage businesses until the app has login.
+  # Anyone signed in may manage businesses until roles decide who may.
   def index? = true
 
   def create? = true

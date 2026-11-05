@@ -1,6 +1,7 @@
 # Base class for application policies
 class ApplicationPolicy < ActionPolicy::Base
-  # There is no login yet, so policies run with a nil user. Rules that need one must check for it.
+  # The user comes from the controller and is nil until something sets the current condominium,
+  # so rules that need one must check for it.
   #
   # Read more about authorization context: https://actionpolicy.evilmartians.io/#/authorization_context
   authorize :user, allow_nil: true

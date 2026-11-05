@@ -1,4 +1,6 @@
 class SessionsController < ApplicationController
+  allow_unauthenticated_access only: :new
+
   def new
   end
 

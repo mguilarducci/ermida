@@ -50,3 +50,7 @@ en:
       updated: Business updated.
     destroy:
       destroyed: Business deleted.
+  sessions:
+    new:
+      title: Sign in
+      unavailable: Signing in isn't available yet.

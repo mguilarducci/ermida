@@ -30,17 +30,14 @@ module Authentication
     Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
   end
 
+  # The stored URL is where signing in will return to, once there is a way to sign in.
   def request_authentication
     session[:return_to_after_authenticating] = request.url
     redirect_to new_session_path
   end
 
-  def after_authentication_url
-    session.delete(:return_to_after_authenticating) || root_url
-  end
-
-  def start_new_session_for(user)
-    user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
+  def start_new_session_for(identity)
+    identity.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
       Current.session = session
       cookies.signed.permanent[:session_id] = {value: session.id, httponly: true, same_site: :lax}
     end
