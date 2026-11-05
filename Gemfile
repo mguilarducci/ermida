@@ -110,8 +110,6 @@ gem "evil-seed", require: false
 # Authentication and authorization
 # ==============================================================================
 
-# has_secure_password, used by `bin/rails generate authentication`
-gem "bcrypt", "~> 3.1.22"
 # Authorization policies [https://actionpolicy.evilmartians.io]
 gem "action_policy", "~> 0.7.8"
 
