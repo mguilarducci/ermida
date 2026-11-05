@@ -35,6 +35,8 @@ dip bash                                   # shell in the app container
 - Test helpers (`test/test_helper.rb`): FactoryBot methods (factories in `test/factories/`), WebMock blocking real
   HTTP (record a needed call once with VCR into `test/cassettes/`), n_plus_one_control's
   `assert_perform_constant_number_of_queries`, and `with_model` for throwaway tables when testing concerns.
+  Every page needs a session, so controller tests call `sign_in_as(identity)` (`test/test_helpers/`) and
+  system tests call their own `sign_in_as(identity)`, which writes the session cookie into the browser.
 - System tests (`test/system/`, `ApplicationSystemTestCase`) drive headless Chrome through Cuprite, with
   capybara-lockstep in the layout. The dev image has no Chrome: in Docker they connect to the `chrome` service
   (browserless) through `CHROME_URL`, which only `dip rails test:system` and `dip ci` set (they stop the
@@ -68,7 +70,13 @@ Building blocks and their base classes:
   `ApplicationViewComponentPreview`, can sit next to their component, and show in Lookbook.
 - **Notifications**: `ApplicationDelivery` (Active Delivery). `PostsDelivery.published(post)` fans out to
   `PostsMailer.published` and any other channel.
-- **Authorization**: `ApplicationPolicy` (Action Policy).
+- **Authentication**: the `Authentication` concern in `ApplicationController` requires a session on every page;
+  controllers opt out with `allow_unauthenticated_access`. Sessions belong to an `Identity` (a person), and a
+  `User` is that identity's place in one `Account` (a condominium). Only the concern sets `Current` (session,
+  identity, user, account), and nothing sets the account yet, so `Current.user` is nil. Nobody can sign in
+  yet: the sign-in page is a placeholder. Mission Control is kept outside it in development.
+- **Authorization**: `ApplicationPolicy` (Action Policy), which gets the user from the controller's
+  `current_user`.
 - **Configuration**: classes in `config/configs/` inheriting `ApplicationConfig` (Anyway Config), read as class
   methods. `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
   skill rather than reading `ENV` or credentials directly.
