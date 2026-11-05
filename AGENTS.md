@@ -112,6 +112,8 @@ and review cite it as `(pack: layered-rails, <file>)`.
   `.compound-engineering/artifacts/solutions/` holds documented solutions to past problems (bugs, best
   practices, workflow patterns), organized by category with YAML frontmatter (module, tags, problem_type);
   relevant when implementing or debugging in an area it covers.
+- `CONCEPTS.md`: shared domain vocabulary (entities, named processes, status concepts); relevant when orienting
+  to the codebase or discussing domain concepts.
 
 ## Conventions
 

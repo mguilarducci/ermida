@@ -1,11 +1,9 @@
 # Base class for application policies
 class ApplicationPolicy < ActionPolicy::Base
-  # Configure additional authorization contexts here
-  # (`user` is added by default).
-  #
-  #   authorize :account, optional: true
+  # There is no login yet, so policies run with a nil user. Rules that need one must check for it.
   #
   # Read more about authorization context: https://actionpolicy.evilmartians.io/#/authorization_context
+  authorize :user, allow_nil: true
 
   private
 

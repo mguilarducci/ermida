@@ -29,3 +29,24 @@
 
 en:
   hello: "Hello world"
+  businesses:
+    index:
+      title: Businesses
+      new: New business
+    show:
+      edit: Edit
+      destroy: Delete
+      confirm_destroy: Delete this business? This cannot be undone.
+      back: Back to businesses
+    new:
+      title: New business
+      back: Back to businesses
+    edit:
+      title: Edit business
+      back: Back
+    create:
+      created: Business created.
+    update:
+      updated: Business updated.
+    destroy:
+      destroyed: Business deleted.
