@@ -1,3 +1,3 @@
 class Session < ApplicationRecord
-  belongs_to :user
+  db_belongs_to :identity
 end
