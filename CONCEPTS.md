@@ -28,3 +28,13 @@ An Identity's place in one Account, carrying the role the person has there and w
 
 What a User is in its Account: a resident (`member`), a service provider (`provider`), someone who administers the condominium (`admin`), its owner (`owner`), or the condominium's own automated actor (`system`).
 *Avoid:* permission, type
+
+## Sign-up
+
+How an Account comes into Ermida: a person, usually the condominium's síndico, proves their email with a sign-in code, then names the Account and becomes its `owner`. Anyone with a verified email can sign up, and one person may sign up several Accounts. Residents and service providers do not sign up; they join an existing Account.
+*Avoid:* registration, cadastro de condomínio
+
+## Sign-in code
+
+The 6-character code emailed to a person to prove the email is theirs, used both to sign in and to sign up. It works once, for 15 minutes, and only in the browser that asked for it. The email carries only the code, never a link to click.
+*Avoid:* magic link, OTP, password
