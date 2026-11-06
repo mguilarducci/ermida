@@ -141,6 +141,27 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, Session.count
   end
 
+  test "the code page under an account's slug goes to the home page" do
+    create(:account, name: "Edifício Aurora")
+    request_code
+
+    get "/accounts/edificio-aurora/session/magic_link"
+
+    assert_redirected_to "/"
+  end
+
+  test "a code posted under an account's slug goes to the home page, unused, and starts no session" do
+    create(:account, name: "Edifício Aurora")
+    request_code
+    link = @identity.magic_links.last
+
+    post "/accounts/edificio-aurora/session/magic_link", params: {code: link.code}
+
+    assert_redirected_to "/"
+    assert_equal 0, Session.count
+    assert MagicLink.exists?(link.id)
+  end
+
   private
 
   def request_code
