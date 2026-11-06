@@ -28,6 +28,9 @@ module Ermida
     # Component previews (Lookbook) live next to their components
     config.view_component.previews.paths << Rails.root.join("app/components")
 
+    # A redirect to a join page carries its code, which lets anyone who has it join
+    config.filter_redirect << %r{/join/}
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
