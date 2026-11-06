@@ -77,7 +77,9 @@ Building blocks and their base classes:
   `PostsMailer.published` and any other channel.
 - **Authentication**: the `Authentication` concern in `ApplicationController` requires a session on every page;
   controllers opt out with `allow_unauthenticated_access`, or `require_unauthenticated_access` for pages only a
-  signed-out person needs. Sessions belong to an `Identity` (a person), and a `User` is that identity's place in
+  signed-out person needs. Neither skips the member check inside an account: a page that also lets in signed-in
+  people who are not users of the account declares `allow_unauthorized_access` (Authorization) and authorizes
+  the visitor itself. Sessions belong to an `Identity` (a person), and a `User` is that identity's place in
   one `Account` (a condominium). An account's pages live under `/accounts/<slug>/` (`/accounts/edificio-aurora/...`):
   the `AccountSlug::Extractor` middleware (`config/initializers/account_slug.rb`) moves that prefix into
   `SCRIPT_NAME`, so url helpers keep it inside an account and `script_name: nil` leaves it. The `AccountScoping`

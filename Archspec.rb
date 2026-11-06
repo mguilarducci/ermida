@@ -51,3 +51,11 @@ domain.cannot_reference_constants "Current"
 # A top-level app/<x>/ folder names a layer or a concept, never a vendor
 component(:vendor_folders, in: "app/{sidekiq,temporal,redis,stripe,kafka}/**/*.rb")
   .must_be_empty(because: "vendor code goes one level deeper, e.g. app/clients/stripe/")
+
+# Authentication identifies the person; skipping the member check is Authorization's opt-out, declared by the page
+authentication = component :authentication, in: %w[
+  app/controllers/concerns/authentication.rb
+  app/controllers/concerns/authentication/**/*.rb
+]
+authentication.cannot_call :allow_unauthorized_access, :ensure_account_access, receiver: :none,
+  because: "skipping the member check is Authorization's opt-out, declared by the page"
