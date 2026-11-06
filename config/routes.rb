@@ -39,4 +39,8 @@ Rails.application.routes.draw do
   scope "join/:code", module: :joins, as: :join do
     resource :membership, only: %i[new create]
   end
+  # Any other path under a join link, such as one pasted with trailing punctuation, is not found here rather than
+  # logged by the router, code included, as an unmatched route.
+  match "join/*rest", via: :all, format: false,
+    to: ->(_env) { [404, {"content-type" => "text/html; charset=utf-8"}, [Rails.public_path.join("404.html").read]] }
 end
