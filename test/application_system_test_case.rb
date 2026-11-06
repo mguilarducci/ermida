@@ -18,7 +18,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # Cuprite connects to it instead of launching Chrome.
   driven_by :cuprite, screen_size: [1400, 1400], options: {
     url: ENV["CHROME_URL"],
-    process_timeout: 10,
+    # How long Chrome may take to start. A cold GitHub runner went past 10 seconds on the first test
+    process_timeout: ENV["CI"] ? 30 : 10,
     timeout: 10
   }.compact
 end
