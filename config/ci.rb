@@ -9,11 +9,14 @@ CI.run do
   step "Security: Gem audit", "bin/bundler-audit"
   step "Security: JavaScript package audit", "bin/bun audit"
   step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+  # Coverage left by earlier runs would count toward this one's merge
+  step "Tests: Reset coverage", "rm -rf coverage"
   step "Tests: Rails", "bin/rails db:test:prepare test"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
   # Needs a browser: CHROME_URL (set by `dip ci`) or a local Chrome
   step "Tests: System", "bin/rails test:system"
+  step "Tests: Coverage", "bin/rails coverage:check"
 
   # Optional: set a green GitHub commit status to unblock PR merge.
   # Requires the `gh` CLI and `gh extension install basecamp/gh-signoff`.

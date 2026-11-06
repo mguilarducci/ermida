@@ -1,4 +1,6 @@
 require "test_helper"
+# A suite name of its own, so its coverage merges with the other tests' instead of replacing it
+SimpleCov.command_name "test:system"
 require "capybara/cuprite"
 require_relative "test_helpers/system_session_test_helper"
 

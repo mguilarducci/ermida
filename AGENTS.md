@@ -19,6 +19,7 @@ dip rails s                                # server on :3000 plus the Vite dev s
 dip rails test                             # whole suite
 dip rails test test/models/foo_test.rb:42  # one file, or one test by line
 dip rails test:system                      # system tests, against the chrome service
+dip rails coverage:check                   # merged coverage of the last runs, against the floor
 dip ci                                     # bin/ci: the whole local CI, system tests included
 dip rubocop                                # Standard, through RuboCop (-a to autocorrect)
 dip archspec check                         # layer boundaries from Archspec.rb
@@ -51,8 +52,13 @@ dip bash                                   # shell in the app container
   check). A clone set up before the commit-msg and pre-push hooks existed installs them with
   `mise exec prek@0.5.7 -- prek install --force`.
 - CI is `.github/workflows/ci.yml`: brakeman (its findings also go to code scanning), bundler-audit,
-  `bun audit`, rubocop, archspec, actionlint, tests and system tests. `bin/ci` (`config/ci.rb`) runs a local
-  version: setup, rubocop, archspec, the audits, brakeman, tests, seeds and system tests.
+  `bun audit`, rubocop, archspec, actionlint, tests and system tests, and a coverage job that merges both test
+  jobs' line coverage and fails below the floor in `lib/tasks/coverage.rake`. `bin/ci` (`config/ci.rb`) runs a
+  local version: setup, rubocop, archspec, the audits, brakeman, tests, seeds, system tests and the coverage floor.
+- Every test run measures line coverage of `app/` and `lib/` with SimpleCov (`.simplecov`; parallel workers
+  merged) into `coverage/` (HTML report in `coverage/index.html`). Only `bin/rails coverage:check` enforces the
+  floor, on the merged suites, so a run of one file never fails on coverage. Raise the floor when coverage
+  rises.
 - `.github/workflows/security.yml` runs CodeQL (Ruby, JavaScript, workflows; `.github/codeql/codeql-config.yml`),
   zizmor and grype on pull requests, on `main` and daily, and `scorecard.yml` runs OpenSSF Scorecard. They
   publish to code scanning and never fail on a finding. `dependency-review.yml` fails a pull request that adds a

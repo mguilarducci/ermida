@@ -50,3 +50,6 @@ node_modules
 
 # Compound Engineering local scratch
 .context/compound-engineering/
+
+# Test coverage (SimpleCov)
+/coverage
