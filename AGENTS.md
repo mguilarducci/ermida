@@ -45,9 +45,16 @@ dip bash                                   # shell in the app container
   service when they finish), so plain `dip rails test test/system/...` fails. GitHub CI launches its own Chrome.
 - The pre-commit hooks (`prek.toml`) run RuboCop and archspec through dip, so Docker must be running to commit.
   Run them by hand with `mise exec prek@0.5.7 -- prek run --all-files`.
-- CI is `.github/workflows/ci.yml`: brakeman, bundler-audit, `bun audit`, rubocop, archspec, tests and
-  system tests. `bin/ci` (`config/ci.rb`) runs a local version: setup, rubocop, archspec, the audits, brakeman,
-  tests, seeds and system tests.
+- CI is `.github/workflows/ci.yml`: brakeman (its findings also go to code scanning), bundler-audit,
+  `bun audit`, rubocop, archspec, actionlint, tests and system tests. `bin/ci` (`config/ci.rb`) runs a local
+  version: setup, rubocop, archspec, the audits, brakeman, tests, seeds and system tests.
+- `.github/workflows/security.yml` runs CodeQL (Ruby, JavaScript, workflows; `.github/codeql/codeql-config.yml`),
+  zizmor and grype on pull requests, on `main` and daily, and `scorecard.yml` runs OpenSSF Scorecard. They
+  publish to code scanning and never fail on a finding. `dependency-review.yml` fails a pull request that adds a
+  vulnerable dependency or one under a license outside its list.
+- Workflows pin every action by commit SHA with its version in a comment, start from `permissions: {}` and grant
+  each job only what it uses, check out with `persist-credentials: false`, and set `timeout-minutes`. Dependabot
+  (`.github/dependabot.yml`) updates gems, bun packages and actions weekly, once a version is 7 days old.
 - After changing `.dockerdev/Dockerfile`, `.dockerdev/Aptfile` or build args, bump the image tag in
   `.dockerdev/compose.yml` and run `dip provision` again.
 
