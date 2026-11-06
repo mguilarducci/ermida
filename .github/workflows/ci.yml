@@ -165,6 +165,14 @@ jobs:
       - name: Install JavaScript dependencies
         run: bin/bun install --frozen-lockfile
 
+      # Boots the app the way the server and console do. The test runs below go through rake, which loads Rake in
+      # full first, so they pass even when a gem breaks that boot (bundlebun 0.5.1 did)
+      - name: Boot the app
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+        run: bin/rails runner 'puts "booted"'
+
       - name: Run tests
         env:
           RAILS_ENV: test

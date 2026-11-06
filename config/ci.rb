@@ -2,6 +2,8 @@
 
 CI.run do
   step "Setup", "bin/setup --skip-server"
+  # Boots the app the way the server and console do; the test steps go through rake, which hides a broken boot
+  step "Boot", "bin/rails runner 'puts \"booted\"'"
 
   step "Style: Ruby", "bin/rubocop"
   step "Architecture: Layer boundaries", "bundle exec archspec check"
