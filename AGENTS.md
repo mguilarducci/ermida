@@ -52,10 +52,12 @@ dip bash                                   # shell in the app container
   Run them by hand with `mise exec prek@0.5.7 -- prek run --all-files` (add `--stage pre-push` for the push
   check). A clone set up before the commit-msg and pre-push hooks existed installs them with
   `mise exec prek@0.5.7 -- prek install --force`.
-- CI is `.github/workflows/ci.yml`: brakeman (its findings also go to code scanning), bundler-audit,
-  `bun audit`, rubocop, archspec, actionlint, tests and system tests, and a coverage job that merges both test
-  jobs' line coverage and fails below the floor in `lib/tasks/coverage.rake`. `bin/ci` (`config/ci.rb`) runs a
-  local version: setup, rubocop, archspec, the audits, brakeman, tests, seeds, system tests and the coverage floor.
+- CI is split as 37signals' Fizzy splits it. `.github/workflows/checks.yml` runs what needs no database: brakeman
+  (its findings also go to code scanning), `bundler-audit check --update`, `bun audit`, gitleaks over the tree,
+  rubocop, archspec and actionlint. `.github/workflows/ci.yml` runs the tests, the system tests (one process,
+  `PARALLEL_WORKERS=1`), a boot of the app outside rake, and a coverage job that merges both test jobs' line
+  coverage and fails below the floor in `lib/tasks/coverage.rake`. `bin/ci` (`config/ci.rb`) runs a local version:
+  setup, rubocop, archspec, the audits, brakeman, tests, the boot, seeds, system tests and the coverage floor.
 - Every test run measures line coverage of `app/` and `lib/` with SimpleCov (`.simplecov`; parallel workers
   merged). Only `bin/rails coverage:check` enforces the floor, on the merged suites, so a run of one file never
   fails on coverage. Raise the floor when coverage rises. In the containers the results live in the bundle
