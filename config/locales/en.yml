@@ -62,6 +62,11 @@ en:
       title: Join %{account}
       intro: Enter your email address. Unless you're signed in with it, we'll email it a code to confirm it.
       submit: Continue
+    memberships:
+      new:
+        title: Join %{account}
+        joining_as: "You're joining as %{email_address}."
+        submit: Join %{account}
   shares:
     show:
       title: Join link
@@ -83,6 +88,8 @@ en:
       sign_in: Already have an account? Sign in
   activemodel:
     attributes:
+      join:
+        person_name: Your name
       join_request:
         email_address: Email address
       account:
