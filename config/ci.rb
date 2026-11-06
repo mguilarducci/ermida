@@ -10,7 +10,7 @@ CI.run do
   step "Security: JavaScript package audit", "bin/bun audit"
   step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
   # Coverage left by earlier runs would count toward this one's merge
-  step "Tests: Reset coverage", "rm -rf coverage"
+  step "Tests: Reset coverage", "rm -rf \"${COVERAGE_DIR:-coverage}\""
   step "Tests: Rails", "bin/rails db:test:prepare test"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 

@@ -12,4 +12,7 @@ SimpleCov.configure do
 
   # `bin/ci` runs the system tests minutes after the others; keep both for the merge
   merge_timeout 3600
+
+  # The development containers keep it off the bind mount (COVERAGE_DIR in .dockerdev/compose.yml)
+  coverage_dir ENV.fetch("COVERAGE_DIR", "coverage")
 end

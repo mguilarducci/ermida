@@ -20,6 +20,7 @@ dip rails test                             # whole suite
 dip rails test test/models/foo_test.rb:42  # one file, or one test by line
 dip rails test:system                      # system tests, against the chrome service
 dip rails coverage:check                   # merged coverage of the last runs, against the floor
+dip coverage                               # copy the coverage report to coverage/index.html
 dip ci                                     # bin/ci: the whole local CI, system tests included
 dip rubocop                                # Standard, through RuboCop (-a to autocorrect)
 dip archspec check                         # layer boundaries from Archspec.rb
@@ -56,9 +57,11 @@ dip bash                                   # shell in the app container
   jobs' line coverage and fails below the floor in `lib/tasks/coverage.rake`. `bin/ci` (`config/ci.rb`) runs a
   local version: setup, rubocop, archspec, the audits, brakeman, tests, seeds, system tests and the coverage floor.
 - Every test run measures line coverage of `app/` and `lib/` with SimpleCov (`.simplecov`; parallel workers
-  merged) into `coverage/` (HTML report in `coverage/index.html`). Only `bin/rails coverage:check` enforces the
-  floor, on the merged suites, so a run of one file never fails on coverage. Raise the floor when coverage
-  rises.
+  merged). Only `bin/rails coverage:check` enforces the floor, on the merged suites, so a run of one file never
+  fails on coverage. Raise the floor when coverage rises. In the containers the results live in the bundle
+  volume (`COVERAGE_DIR`), not in `coverage/`: the workers lock the shared result file with flock, which the
+  macOS bind mount ignores, so writing there drops a worker's result now and then. `dip coverage` copies the
+  report to `coverage/index.html`.
 - `.github/workflows/security.yml` runs CodeQL (Ruby, JavaScript, workflows; `.github/codeql/codeql-config.yml`),
   zizmor and grype on pull requests, on `main` and daily, and `scorecard.yml` runs OpenSSF Scorecard. They
   publish to code scanning and never fail on a finding. `dependency-review.yml` fails a pull request that adds a
