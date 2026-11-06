@@ -1,15 +1,37 @@
-#!/usr/bin/env ruby
+#!/bin/sh
 # Sets up or updates a checkout for development on the host, as 37signals does with Fizzy: mise for
 # Ruby and the tools (.mise.toml), Homebrew (Brewfile) or pacman for the system packages, and Postgres
 # in a plain container unless one already listens on this checkout's port. Each git worktree gets its
 # own Postgres on its own port (config/local_database.rb). Safe to run again at any time; bin/ci runs it.
 #
-# Runs before mise has installed this project's Ruby, possibly on the system Ruby, so it sticks to the
-# standard library and plain syntax.
-#
 #   bin/setup                 set up, then start bin/dev
 #   bin/setup --skip-server   set up only
 #   bin/setup --reset         also reset the development database
+#
+# This first part is shell. Until mise trusts this checkout's .mise.toml, its `ruby` shim refuses to run
+# here at all, so a fresh checkout could not start a Ruby script. It installs mise when missing, trusts
+# the config, installs the pinned Ruby and tools, then runs the Ruby below on that Ruby (`ruby -x` skips
+# to the `#!ruby` line).
+set -e
+script="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+cd "$(dirname "$script")/.."
+
+echo "== Installing mise, Ruby and tools =="
+if ! command -v mise > /dev/null 2>&1; then
+  if [ "$(uname -s)" = Darwin ] && command -v brew > /dev/null 2>&1; then
+    brew install mise
+  elif command -v pacman > /dev/null 2>&1; then
+    sudo pacman -S --noconfirm --needed mise
+  else
+    echo "bin/setup needs mise: https://mise.jdx.dev" >&2
+    exit 1
+  fi
+fi
+mise trust --quiet "$PWD/.mise.toml"
+mise install
+exec mise exec -- ruby -x "$script" "$@"
+
+#!ruby
 require "fileutils"
 require "socket"
 
@@ -21,11 +43,6 @@ FIRST_WORKTREE_PORT = 5433
 
 def system!(*args)
   system(*args, exception: true)
-end
-
-# Commands that need this project's Ruby or tools, whatever shell bin/setup was started from
-def mise!(*args)
-  system!("mise", "exec", "--", *args)
 end
 
 def step(title)
@@ -42,18 +59,6 @@ end
 
 def worktree?
   File.file?(File.join(APP_ROOT, ".git"))
-end
-
-def ensure_mise
-  return if command?("mise")
-
-  if macos? && command?("brew")
-    system! "brew install mise"
-  elsif command?("pacman")
-    system! "sudo pacman -S --noconfirm --needed mise"
-  else
-    abort "bin/setup needs mise: https://mise.jdx.dev"
-  end
 end
 
 def install_system_packages
@@ -79,12 +84,12 @@ def install_chrome
 end
 
 def install_gems
-  system("mise exec -- bundle check > /dev/null") || mise!("bundle", "install")
+  system("bundle check > /dev/null") || system!("bundle install")
 
   # rails-hyperdrive's companion, kept out of the Gemfile so production and CI never install it
-  return if `mise exec -- bundle plugin list 2>/dev/null`.include?("bundler-hyperdrive")
+  return if `bundle plugin list 2>/dev/null`.include?("bundler-hyperdrive")
 
-  mise! "bundle", "plugin", "install", "bundler-hyperdrive", "--version", "0.2.0"
+  system! "bundle", "plugin", "install", "bundler-hyperdrive", "--version", "0.2.0"
 end
 
 # The port this checkout's Postgres listens on. A worktree picks one the first time and records it,
@@ -121,8 +126,9 @@ def container_name
   worktree? ? "ermida-postgres-#{File.basename(APP_ROOT)}" : "ermida-postgres"
 end
 
+# PGCONNECT_TIMEOUT: whatever listens on the port may not be a Postgres at all, and psql would wait on it forever
 def psql(port, sql)
-  `PGPASSWORD=postgres psql -h 127.0.0.1 -p #{port} -U postgres -d postgres -tAc "#{sql}" 2>/dev/null`.strip
+  `PGCONNECT_TIMEOUT=3 PGPASSWORD=postgres psql -h 127.0.0.1 -p #{port} -U postgres -d postgres -tAc "#{sql}" 2>/dev/null`.strip
 end
 
 # The Postgres already listening on the port, or this checkout's container, started or created
@@ -137,8 +143,8 @@ end
 def check_postgres(port)
   if psql(port, "select 1") != "1"
     abort <<~MESSAGE
-      A Postgres listens on 127.0.0.1:#{port} but does not accept the postgres user with password postgres,
-      which config/database.yml connects as. Create that role in it:
+      Something listens on 127.0.0.1:#{port}, but not a Postgres that accepts the postgres user with password
+      postgres, which config/database.yml connects as. If it is a Postgres, create that role in it:
 
         psql -h 127.0.0.1 -p #{port} -d postgres -c "create role postgres with login superuser password 'postgres'"
 
@@ -166,6 +172,11 @@ def start_postgres(port)
       POSTGRES_IMAGE,
       "-c", "shared_preload_libraries=pg_stat_statements" # pghero's query stats; production loads it too
   else
+    published = `docker inspect --format '{{(index (index .HostConfig.PortBindings "5432/tcp") 0).HostPort}}' #{name}`.to_i
+    if published != port
+      abort "The #{name} container publishes port #{published}, not #{port}: point ERMIDA_DB_PORT or .ermida-db-port at #{published}, or remove the container (docker rm #{name}) to start a new one"
+    end
+
     system! "docker", "start", name
   end
 
@@ -177,40 +188,33 @@ def start_postgres(port)
 end
 
 FileUtils.chdir APP_ROOT do
-  step "Installing mise"
-  ensure_mise
-  system! "mise", "trust", "--quiet", File.join(APP_ROOT, ".mise.toml")
-
   step "Installing system packages"
   install_system_packages
-
-  step "Installing Ruby and tools"
-  system! "mise", "install"
 
   step "Installing dependencies"
   install_gems
   # JavaScript packages for Vite, through the Bun that bundlebun ships
-  mise! "bin/bun", "install"
+  system! "bin/bun", "install"
 
   step "Starting Postgres"
   port = database_port
   ensure_postgres(port)
 
   step "Preparing database"
-  mise! "bin/rails", "db:prepare"
-  mise! "bin/rails", "db:reset" if ARGV.include?("--reset")
+  system! "bin/rails", "db:prepare"
+  system! "bin/rails", "db:reset" if ARGV.include?("--reset")
 
   step "Installing git hooks"
   # --force writes the hooks even when a global core.hooksPath is set; such a global hooks directory
   # must chain to .git/hooks for these to run
-  mise! "prek", "install", "--force"
+  system! "prek", "install", "--force"
 
   step "Removing old logs and tempfiles"
-  mise! "bin/rails", "log:clear", "tmp:clear"
+  system! "bin/rails", "log:clear", "tmp:clear"
 
   unless ARGV.include?("--skip-server")
     step "Starting development server"
     STDOUT.flush # flush the output before exec(2) so that it displays
-    exec "mise", "exec", "--", "bin/dev"
+    exec "bin/dev"
   end
 end
