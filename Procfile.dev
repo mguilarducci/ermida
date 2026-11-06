@@ -1,0 +1,2 @@
+web: env SOLID_QUEUE_IN_PUMA=true PROMETHEUS_EXPORTER_BIND=127.0.0.1 PROMETHEUS_EXPORTER_PORT=9394 bin/rails server -p $PORT
+vite: bin/vite dev

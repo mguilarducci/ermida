@@ -18,6 +18,9 @@ local: &local
   port: <%= LocalDatabase.port %>
   username: postgres
   password: postgres
+  # On macOS, libpq looking for Kerberos credentials makes the processes Rails forks (Solid Queue's
+  # supervisor, parallel test workers) crash on their first connection; there is no Kerberos here
+  gssencmode: disable
 
 # Same layout as production: Solid Cache, Queue and Cable get their own databases
 development:

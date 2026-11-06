@@ -7,8 +7,4 @@ export default defineConfig({
     RubyPlugin(),
     tailwindcss(),
   ],
-  server: {
-    // In Docker, Rails proxies asset requests with Host "vite" (the compose service)
-    allowedHosts: ['vite'],
-  },
 })

@@ -15,9 +15,6 @@ Rails.application.configure do
   # Enable server timing.
   config.server_timing = true
 
-  # Let web-console accept the Docker gateway's IP (set in .dockerdev/compose.yml).
-  config.web_console.permissions = ENV["WEB_CONSOLE_PERMISSIONS"].split(",") if ENV["WEB_CONSOLE_PERMISSIONS"]
-
   # Enable/disable Action Controller caching. By default Action Controller caching is disabled.
   # Run rails dev:cache to toggle Action Controller caching.
   if Rails.root.join("tmp/caching-dev.txt").exist?
@@ -63,7 +60,7 @@ Rails.application.configure do
   # Append comments with runtime information tags to SQL queries in logs.
   config.active_record.query_log_tags_enabled = true
 
-  # Jobs go through Solid Queue, as in production. `dip rails s` runs the worker inside Puma.
+  # Jobs go through Solid Queue, as in production. `bin/dev` runs the worker inside Puma.
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = {database: {writing: :queue}}
 
