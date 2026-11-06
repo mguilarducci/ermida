@@ -1,6 +1,6 @@
-# The app's checks on every pull request and each push to main: the security
-# scans of the code and of its dependencies, lint, the layer boundaries, and
-# the tests with their coverage floor. bin/ci runs the same steps locally.
+# The app's tests on every pull request and each push to main, with their
+# coverage floor and a boot outside rake. The checks that need no database are
+# in checks.yml. bin/ci runs the same steps locally.
 #
 # Actions are pinned by commit SHA with their version in a comment; Dependabot
 # (.github/dependabot.yml) moves the pins.
@@ -20,121 +20,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  scan_ruby:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      security-events: write # uploads Brakeman's findings to code scanning
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
-        with:
-          bundler-cache: true
-
-      # Fails on any warning, and writes the findings as SARIF for code
-      # scanning as well as text to the log.
-      - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager -o brakeman.sarif -o /dev/stdout
-
-      - name: Upload Brakeman's findings to code scanning
-        if: ${{ !cancelled() && hashFiles('brakeman.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
-        with:
-          sarif_file: brakeman.sarif
-          category: brakeman
-
-      - name: Scan for known security vulnerabilities in gems used
-        run: bin/bundler-audit
-
-  scan_js:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
-        with:
-          bundler-cache: true
-
-      - name: Install JavaScript dependencies
-        run: bin/bun install --frozen-lockfile
-
-      - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bin/bun audit
-
-  lint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    env:
-      RUBOCOP_CACHE_ROOT: tmp/rubocop
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
-        with:
-          bundler-cache: true
-
-      - name: Prepare RuboCop cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        env:
-          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
-        with:
-          path: ${{ env.RUBOCOP_CACHE_ROOT }}
-          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
-          restore-keys: |
-            rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
-
-      - name: Lint code for consistent style
-        run: bin/rubocop -f github
-
-      - name: Check layer boundaries
-        run: bundle exec archspec check
-
-  # actionlint over the workflows, with shellcheck (on the runner image) over
-  # every run: script. The release is checked against its checksum.
-  actionlint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install actionlint
-        env:
-          VERSION: 1.7.12
-          SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
-        run: |
-          archive="$RUNNER_TEMP/actionlint.tar.gz"
-          curl -fsSL --proto '=https' --tlsv1.2 -o "$archive" \
-            "https://github.com/rhysd/actionlint/releases/download/v${VERSION}/actionlint_${VERSION}_linux_amd64.tar.gz"
-          echo "${SHA256}  $archive" | sha256sum -c -
-          tar -xzf "$archive" -C "$RUNNER_TEMP" actionlint
-
-      - name: Lint workflows
-        run: '"$RUNNER_TEMP/actionlint" -color'
-
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -225,6 +110,8 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
+          # One process, as 37signals' Fizzy runs them: system tests aren't reliable in parallel
+          PARALLEL_WORKERS: 1
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: bin/rails db:test:prepare test:system
 
