@@ -19,7 +19,6 @@ CI.run do
   step "Tests: Boot", "bin/rails runner 'puts \"booted\"'"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
-  # Needs Chrome or Chromium on the machine, which bin/setup installs
   step "Tests: System", "env PARALLEL_WORKERS=1 bin/rails test:system"
   step "Tests: Coverage", "bin/rails coverage:check"
 

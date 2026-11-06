@@ -67,7 +67,6 @@ def install_system_packages
     system("brew bundle check --quiet --file=Brewfile") || system!("brew bundle install --file=Brewfile")
     install_chrome
   elsif command?("pacman")
-    # The pacman names declared in .mise.toml; install only when one is missing
     packages = File.read(File.join(APP_ROOT, ".mise.toml")).scan(/"pacman:([\w.+-]+)"/).flatten
     system("pacman -Q #{packages.join(" ")} > /dev/null 2>&1") || system!("mise bootstrap packages apply --yes")
   else
@@ -78,22 +77,21 @@ end
 # System tests drive Chrome through Cuprite, which looks for it in /Applications. Homebrew refuses to
 # install over a Chrome it did not install, so this only runs when there is none.
 def install_chrome
-  return if ["/Applications/Google Chrome.app", "/Applications/Chromium.app"].any? { |app| File.exist?(app) }
-
-  system! "brew install --cask google-chrome"
+  unless ["/Applications/Google Chrome.app", "/Applications/Chromium.app"].any? { |app| File.exist?(app) }
+    system! "brew install --cask google-chrome"
+  end
 end
 
 def install_gems
   system("bundle check > /dev/null") || system!("bundle install")
 
   # rails-hyperdrive's companion, kept out of the Gemfile so production and CI never install it
-  return if `bundle plugin list 2>/dev/null`.include?("bundler-hyperdrive")
-
-  system! "bundle", "plugin", "install", "bundler-hyperdrive", "--version", "0.2.0"
+  unless `bundle plugin list 2>/dev/null`.include?("bundler-hyperdrive")
+    system! "bundle", "plugin", "install", "bundler-hyperdrive", "--version", "0.2.0"
+  end
 end
 
-# The port this checkout's Postgres listens on. A worktree picks one the first time and records it,
-# which config/local_database.rb reads; ERMIDA_DB_PORT overrides both.
+# Mirrors config/local_database.rb, which reads the port this writes; keep the two in step.
 def database_port
   if !ENV["ERMIDA_DB_PORT"].to_s.strip.empty?
     Integer(ENV["ERMIDA_DB_PORT"].strip)
@@ -110,9 +108,27 @@ def database_port
 end
 
 def free_worktree_port
-  taken = `docker ps -a --filter name=ermida-postgres --format '{{.Ports}}' 2>/dev/null`.scan(/:(\d+)->/).flatten.map(&:to_i)
+  taken = container_ports + other_worktree_ports
   (FIRST_WORKTREE_PORT..FIRST_WORKTREE_PORT + 100).find { |port| !taken.include?(port) && !listening?(port) } ||
     abort("No free port for this worktree's Postgres from #{FIRST_WORKTREE_PORT} up")
+end
+
+# Every checkout's container, stopped ones too: after Docker restarts they are all stopped and listen on nothing
+def container_ports
+  `docker ps -a --filter name=ermida-postgres --format '{{.Names}}' 2>/dev/null`.split.map { |name| published_port(name) }
+end
+
+# Covers a worktree whose bin/setup recorded its port but stopped before creating its container
+def other_worktree_ports
+  `git worktree list --porcelain`.scan(/^worktree (.+)$/).flatten
+    .map { |path| File.join(path, File.basename(PORT_FILE)) }
+    .select { |file| File.exist?(file) }
+    .map { |file| File.read(file).to_i }
+end
+
+# Read from the container's configuration, which keeps the port while it is stopped (`docker ps` shows none then)
+def published_port(name)
+  `docker inspect --format '{{(index (index .HostConfig.PortBindings "5432/tcp") 0).HostPort}}' #{name} 2>/dev/null`.to_i
 end
 
 def listening?(port)
@@ -131,13 +147,23 @@ def psql(port, sql)
   `PGCONNECT_TIMEOUT=3 PGPASSWORD=postgres psql -h 127.0.0.1 -p #{port} -U postgres -d postgres -tAc "#{sql}" 2>/dev/null`.strip
 end
 
-# The Postgres already listening on the port, or this checkout's container, started or created
+# This checkout's own container comes first: whatever else listens on its port, after a Docker restart, may be
+# another checkout's Postgres, with databases of the same names
 def ensure_postgres(port)
-  if listening?(port)
+  docker = system("docker info > /dev/null 2>&1")
+  if docker && container?
+    start_container(port)
+  elsif listening?(port)
     check_postgres(port)
+  elsif docker
+    run_container(port)
   else
-    start_postgres(port)
+    abort "No Postgres on 127.0.0.1:#{port}, and Docker, which bin/setup starts one with, is not running"
   end
+end
+
+def container?
+  !`docker ps -aq --filter name=^/#{container_name}$`.strip.empty?
 end
 
 def check_postgres(port)
@@ -160,26 +186,36 @@ def check_postgres(port)
   end
 end
 
-def start_postgres(port)
-  abort "No Postgres on 127.0.0.1:#{port}, and Docker, which bin/setup starts one with, is not running" unless system("docker info > /dev/null 2>&1")
+def run_container(port)
+  system! "docker", "run", "--detach", "--name", container_name,
+    "--env", "POSTGRES_PASSWORD=postgres",
+    "--volume", "#{container_name}:/var/lib/postgresql", # Postgres 18 moved its data below this directory
+    "--publish", "127.0.0.1:#{port}:5432",
+    POSTGRES_IMAGE,
+    "-c", "shared_preload_libraries=pg_stat_statements" # pghero's query stats; production loads it too
+  wait_for_postgres(port)
+end
 
+def start_container(port)
   name = container_name
-  if `docker ps -aq --filter name=^/#{name}$`.strip.empty?
-    system! "docker", "run", "--detach", "--name", name,
-      "--env", "POSTGRES_PASSWORD=postgres",
-      "--volume", "#{name}:/var/lib/postgresql", # Postgres 18 moved its data below this directory
-      "--publish", "127.0.0.1:#{port}:5432",
-      POSTGRES_IMAGE,
-      "-c", "shared_preload_libraries=pg_stat_statements" # pghero's query stats; production loads it too
-  else
-    published = `docker inspect --format '{{(index (index .HostConfig.PortBindings "5432/tcp") 0).HostPort}}' #{name}`.to_i
-    if published != port
-      abort "The #{name} container publishes port #{published}, not #{port}: point ERMIDA_DB_PORT or .ermida-db-port at #{published}, or remove the container (docker rm #{name}) to start a new one"
+  published = published_port(name)
+  if published != port
+    abort "The #{name} container publishes port #{published}, not #{port}: point ERMIDA_DB_PORT or .ermida-db-port at #{published}, or remove the container (docker rm #{name}) to start a new one"
+  end
+
+  if `docker inspect --format '{{.State.Running}}' #{name}`.strip != "true"
+    # Never start it into a taken port: after a failed start, Docker may start it again without the binding
+    if listening?(port)
+      abort "The #{name} container is stopped and something else listens on port #{port} (lsof -iTCP:#{port} -sTCP:LISTEN). Stop that server and run bin/setup again"
     end
 
     system! "docker", "start", name
   end
+  wait_for_postgres(port)
+end
 
+def wait_for_postgres(port)
+  name = container_name
   30.times do
     return if psql(port, "select 1") == "1"
     sleep 1

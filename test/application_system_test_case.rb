@@ -7,7 +7,7 @@ require_relative "test_helpers/system_session_test_helper"
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   include SystemSessionTestHelper
 
-  # Headless Chrome over CDP, no Selenium: Cuprite launches the Chrome or Chromium installed on the machine
+  # Headless Chrome over CDP, no Selenium
   driven_by :cuprite, screen_size: [1400, 1400], options: {
     # How long Chrome may take to start. A cold GitHub runner went past 10 seconds on the first test
     process_timeout: ENV["CI"] ? 30 : 10,
