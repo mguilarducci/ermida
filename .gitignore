@@ -37,8 +37,6 @@
 /config/*.local.yml
 /config/credentials/local.*
 
-# Host UID/GID for the development containers (written by `dip provision`).
-/.dockerdev/.env
 .hyperdrive/discover_cache.json
 
 # Vite Ruby

@@ -51,7 +51,5 @@
 /.dockerignore
 /Dockerfile*
 
-# Ignore the development Docker environment.
-/.dockerdev/
-/dip.yml
+# Ignore development-only tooling.
 /prek.toml

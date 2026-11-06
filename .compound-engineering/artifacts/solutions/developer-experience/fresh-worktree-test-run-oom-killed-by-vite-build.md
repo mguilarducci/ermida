@@ -36,16 +36,16 @@ In a git worktree that has never run `dip provision` (or `bin/setup`), `dip rail
 
 ## Solution
 
-Install the JavaScript packages in the worktree. `bin/setup` does this with `bin/bun install`, and `dip provision` and the first step of `dip ci` both run `bin/setup`. By hand, `--frozen-lockfile` leaves `bun.lock` untouched:
+Install the JavaScript packages in the worktree. `bin/setup` does this with `bin/bun install`, and the first step of `bin/ci` runs `bin/setup`. By hand, `--frozen-lockfile` leaves `bun.lock` untouched:
 
 ```sh
-dip bun install --frozen-lockfile
-dip rails test
+bin/bun install --frozen-lockfile
+bin/rails test
 ```
 
 After the install the suite passed: 178 runs, 0 failures, on three seeds.
 
-Before the fix described below, the first run after the install (or after `bin/setup`'s `tmp:clear`, the first step of `dip ci`) also showed one to three `Vite Ruby can't find entrypoints/application.css in the manifests` errors. Every parallel worker started its own first Vite build, and some read the manifest while another build was rewriting it. `test/test_helper.rb` now calls `ViteRuby.commands.build` once, before `parallelize` forks the workers, so the workers find the build in place.
+Before the fix described below, the first run after the install (or after `bin/setup`'s `tmp:clear`, the first step of `bin/ci`) also showed one to three `Vite Ruby can't find entrypoints/application.css in the manifests` errors. Every parallel worker started its own first Vite build, and some read the manifest while another build was rewriting it. `test/test_helper.rb` now calls `ViteRuby.commands.build` once, before `parallelize` forks the workers, so the workers find the build in place.
 
 ## Why This Works
 
@@ -55,13 +55,13 @@ With no `node_modules`, `bun x vite` has no Vite package to run. In the dev cont
 
 Once `node_modules/.bin/vite` exists, `bun x vite` runs the real Vite and the loop never starts.
 
-Worktrees share nothing in `node_modules`: `.dockerdev/compose.yml` mounts `${PWD}` and keeps only gems (`bundle`), shell history and Postgres in named volumes. Every new worktree needs its own install.
+Worktrees share nothing in `node_modules`: each checkout has its own. Every new worktree needs its own install. Development has since moved from the dev container to the host; the loop is the same there, since vite_ruby's `vite` executable is on the gem path either way, and it ends when the machine runs out of memory instead of when Docker kills a container.
 
 ## Prevention
 
-- Run `dip provision`, or at least `dip bun install --frozen-lockfile`, in every new worktree before running tests.
-- When a dip command exits 137 with no output, check `docker events --filter event=oom` and `ls node_modules` before suspecting the code under test.
-- `bin/bun-vite` now stops with "node_modules is missing: run `dip bun install` (or `bin/bun install`)" when `node_modules/.bin/vite` does not exist. The test that renders the first page fails with that message instead of the container being killed. A test can't hold this lesson, because before the check the container was killed before any test result printed.
+- Run `bin/setup`, or at least `bin/bun install --frozen-lockfile`, in every new worktree before running tests.
+- When a test run dies with no output, check `ls node_modules` before suspecting the code under test.
+- `bin/bun-vite` now stops with "node_modules is missing: run `bin/bun install`" when `node_modules/.bin/vite` does not exist. The test that renders the first page fails with that message instead of the process being killed. A test can't hold this lesson, because before the check the container was killed before any test result printed.
 
 ## Related Issues
 

@@ -2,32 +2,34 @@
 
 ## Development
 
-Development runs in Docker through [dip](https://github.com/bibendi/dip), following Evil Martians'
-[Ruby on Whales](https://evilmartians.com/chronicles/ruby-on-whales-docker-for-ruby-rails-development).
-The setup lives in `.dockerdev/` and is separate from the production `Dockerfile` (Kamal).
+Development runs on the host, as 37signals runs [Fizzy](https://github.com/basecamp/fizzy):
+[mise](https://mise.jdx.dev) installs Ruby and the tools pinned in `.mise.toml`, Homebrew (macOS, `Brewfile`)
+or pacman (Arch/Omarchy, `[bootstrap.packages]` in `.mise.toml`) installs the system packages, and only
+Postgres runs in Docker. The production `Dockerfile` (Kamal) is separate.
 
-Requirements: Docker with Compose, dip (`gem install dip`; there is no current Homebrew formula), and
-[mise](https://mise.jdx.dev), which `dip provision` uses to fetch [prek](https://prek.j178.dev).
+Requirements: macOS with [Homebrew](https://brew.sh), or Arch/Omarchy with pacman; and Docker, for Postgres,
+unless a Postgres 18 already listens on the checkout's port. `bin/setup` installs mise when it is missing.
 
 ```sh
-dip provision        # build the image, start Postgres, install gems and JS packages, prepare the database
-dip rails s          # server at http://localhost:3000 (debugger and binding.irb work here), plus Vite
-dip rails c          # console
-dip rails test       # tests
-dip psql             # psql on the development database
-dip bash             # shell in the app container
-dip rubocop          # Standard
-dip archspec check   # layer boundaries in Archspec.rb (also in CI and pre-commit)
-dip bun add <pkg>    # JavaScript packages (Bun from the bundlebun gem)
+bin/setup              # install everything, start Postgres, prepare the database, install the git hooks, start bin/dev
+bin/dev                # server at http://localhost:3000, plus Vite (hot reload on 3036)
+bin/rails console      # console
+bin/rails test         # tests
+bin/rails dbconsole    # psql on the development database
+bin/ci                 # the whole local CI
+bin/rubocop            # Standard
+bin/bun add <pkg>      # JavaScript packages (Bun from the bundlebun gem)
 ```
 
-- JavaScript and CSS live in `app/javascript` and are bundled by Vite. `dip rails s` starts the Vite dev
-  server in the background (hot reload on port 3036); its logs: `dip compose logs -f vite`.
-- `RESET_DOCKER=true dip provision` starts from scratch: it drops the gems and the databases.
-- Containers run as your user (UID/GID in `.dockerdev/.env`, written by `dip provision`), so files they
-  create in the project are not owned by root on Linux.
-- Ports are published on `127.0.0.1` only. Postgres gets a random port: `docker port ermida_dev-postgres-1`.
-- `dip provision` installs the Git pre-commit hooks in `prek.toml` (RuboCop through dip, plus prek's
-  built-in checks). Run them by hand with `mise exec prek@0.5.7 -- prek run --all-files`.
-- After changing `.dockerdev/Dockerfile`, `.dockerdev/Aptfile` or the build args, bump the image tag in
-  `.dockerdev/compose.yml` and run `dip provision` again.
+- Run them from a shell where mise is activated, or prefix them with `mise exec --`.
+- Each checkout gets its own Postgres: the main checkout on 5432 (the `ermida-postgres` container, or a
+  Postgres already listening there that accepts `postgres`/`postgres`), each git worktree on its own port from
+  5433 (the `ermida-postgres-<worktree directory>` container). `bin/setup` records a worktree's port in
+  `.ermida-db-port`; a worktree that hasn't run it refuses to boot.
+- `bin/dev` runs Rails and Vite through foreman (`Procfile.dev`). To stop at `debugger` or `binding.irb`, run
+  `bin/rails server` and `bin/vite dev` in two terminals instead. `PORT=3100 bin/dev` serves on another port.
+- `bin/setup --reset` also resets the development database. Running it again at any time is safe.
+- If Vite fails to load a native module after moving off the old Docker setup, delete `node_modules` and run
+  `bin/setup` again: the packages installed in the container were built for Linux.
+- The old Docker development setup left volumes named `ermida_dev_*` (`docker volume ls`), which nothing uses
+  any more and can be deleted.
