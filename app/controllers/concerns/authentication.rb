@@ -44,6 +44,12 @@ module Authentication
     redirect_to new_session_path(script_name: nil)
   end
 
+  # Where signing in returns to, for a page that sends the person through the code page itself. Only paths the app
+  # built go here, never one taken from the request.
+  def return_after_authenticating_to(path)
+    session[:return_to_after_authenticating] = path
+  end
+
   def redirect_signed_in_person
     redirect_to root_path(script_name: nil) if authenticated?
   end

@@ -57,6 +57,11 @@ en:
       share: Share the join link
       accounts: Your accounts
       sign_out: Sign out
+  joins:
+    show:
+      title: Join %{account}
+      intro: Enter your email address. Unless you're signed in with it, we'll email it a code to confirm it.
+      submit: Continue
   shares:
     show:
       title: Join link
@@ -78,6 +83,8 @@ en:
       sign_in: Already have an account? Sign in
   activemodel:
     attributes:
+      join_request:
+        email_address: Email address
       account:
         name: Account name
         person_name: Your name
