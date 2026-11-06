@@ -59,3 +59,8 @@ authentication = component :authentication, in: %w[
 ]
 authentication.cannot_call :allow_unauthorized_access, :ensure_account_access, receiver: :none,
   because: "skipping the member check is Authorization's opt-out, declared by the page"
+
+# Who may do what is a policy's decision: controllers, forms and components never read a role. member? and provider?
+# are left out because Set#member? and Hash#member? share those names.
+presentation.cannot_call :administrator?, :owner?, :admin?,
+  because: "role checks live in app/policies/"
