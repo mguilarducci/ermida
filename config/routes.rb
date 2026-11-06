@@ -29,4 +29,18 @@ Rails.application.routes.draw do
 
   # Inside an account (/accounts/edificio-aurora/) the root is that account's page; outside one it leads to the menu.
   root "landings#show"
+
+  # Inside an account
+  resource :share, only: :show
+  # A join link: /accounts/<slug>/join/<code>. The code is the secret, and the controller checks it, so an unknown
+  # code still reaches it instead of logging the raw path as an unmatched route.
+  get "join/:code", to: "joins#show", as: :join
+  post "join/:code", to: "joins#create"
+  scope "join/:code", module: :joins, as: :join do
+    resource :membership, only: %i[new create]
+  end
+  # Any other path under a join link, such as one pasted with trailing punctuation, is not found here rather than
+  # logged by the router, code included, as an unmatched route.
+  match "join/*rest", via: :all, format: false,
+    to: ->(_env) { [404, {"content-type" => "text/html; charset=utf-8"}, [Rails.public_path.join("404.html").read]] }
 end

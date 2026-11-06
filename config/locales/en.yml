@@ -50,10 +50,30 @@ en:
       updated: Business updated.
     destroy:
       destroyed: Business deleted.
+  authorization:
+    denied: You can't open that page.
   landings:
     show:
+      share: Share the join link
       accounts: Your accounts
       sign_out: Sign out
+  joins:
+    show:
+      title: Join %{account}
+      intro: Enter your email address. Unless you're signed in with it, we'll email it a code to confirm it.
+      submit: Continue
+    memberships:
+      new:
+        title: Join %{account}
+        joining_as: "You're joining as %{email_address}."
+        submit: Join %{account}
+  shares:
+    show:
+      title: Join link
+      intro: Anyone with this link can join %{account} as a member. Share it where residents and service providers will see it, such as the building's group chat.
+      link: Join link
+      copy: Copy link
+      copied: Copied
   accounts:
     new:
       title: Create an account
@@ -68,6 +88,10 @@ en:
       sign_in: Already have an account? Sign in
   activemodel:
     attributes:
+      join:
+        person_name: Your name
+      join_request:
+        email_address: Email address
       account:
         name: Account name
         person_name: Your name

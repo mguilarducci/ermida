@@ -14,6 +14,28 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
     def show = head(:ok)
   end
 
+  # A page only owners and admins may use, refused to anyone else by its policy.
+  class AdministratorPageController < ApplicationController
+    verify_authorized
+
+    def show
+      authorize! Current.account, to: :share?
+      head :ok
+    end
+
+    def create
+      authorize! Current.account, to: :share?
+      Current.account.update!(name: "Renamed")
+      head :ok
+    end
+  end
+
+  class UncheckedPageController < ApplicationController
+    verify_authorized
+
+    def show = head(:ok)
+  end
+
   setup do
     @account = create(:account, name: "Edifício Aurora")
     @identity = create(:identity)
@@ -47,6 +69,42 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Under with_routing the probe's url helpers drop the account's slug, so SharesControllerTest checks that the
+  # redirect stays inside the account.
+  test "a user refused a page of their account is redirected with an alert, not shown an error" do
+    create(:user, identity: @identity, account: @account, role: :member)
+
+    with_probe_routes do
+      sign_in_as(@identity)
+      get "/accounts/edificio-aurora/administrator"
+
+      assert_response :see_other
+      assert_equal I18n.t("authorization.denied"), flash[:alert]
+    end
+  end
+
+  test "a refused form submission changes nothing" do
+    create(:user, identity: @identity, account: @account, role: :member)
+
+    with_probe_routes do
+      sign_in_as(@identity)
+      post "/accounts/edificio-aurora/administrator"
+
+      assert_response :see_other
+    end
+
+    assert_equal "Edifício Aurora", @account.reload.name
+  end
+
+  test "a page that never checks authorization still fails loudly" do
+    create(:user, identity: @identity, account: @account)
+
+    with_probe_routes do
+      sign_in_as(@identity)
+      assert_raises(ActionPolicy::UnauthorizedAction) { get "/accounts/edificio-aurora/unchecked" }
+    end
+  end
+
   private
 
   # with_routing replaces the whole route set, so it also draws the routes the concerns redirect to. It also starts
@@ -56,6 +114,8 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
       routes.draw do
         get "signed_out", to: "authorization_test/signed_out_page#show"
         get "non_member", to: "authorization_test/non_member_page#show"
+        resource :administrator, only: %i[show create], controller: "authorization_test/administrator_page"
+        get "unchecked", to: "authorization_test/unchecked_page#show"
         resource :session, only: :new do
           scope module: :sessions do
             resource :menu, only: :show

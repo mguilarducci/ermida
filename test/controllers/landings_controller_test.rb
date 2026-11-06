@@ -64,6 +64,19 @@ class LandingsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?] button", "/session"
   end
 
+  test "an owner's page links to the join link, and a member's does not" do
+    owner = create(:user, account: @account, role: :owner).identity
+    member = create(:user, account: @account, role: :member).identity
+
+    sign_in_as(owner)
+    get "/accounts/edificio-aurora/"
+    assert_select "a[href=?]", "/accounts/edificio-aurora/share"
+
+    sign_in_as(member)
+    get "/accounts/edificio-aurora/"
+    assert_select "a[href=?]", "/accounts/edificio-aurora/share", count: 0
+  end
+
   test "a page that belongs to no account, opened under an account's slug, goes to the home page" do
     create(:user, identity: @identity, account: @account)
     sign_in_as(@identity)

@@ -124,9 +124,19 @@ Building blocks and their base classes:
   refuses to load with that on in any other environment). Outside an account, `/` leads to the account menu,
   which goes straight into the account when the person has only one. Mission Control is kept outside it in
   development.
+- **Join link**: each `Account` has a `join_code` (`Account::JoinCode`, 12 base58 characters), and anyone with
+  `/accounts/<slug>/join/<code>` joins as a member (`Account#join`). Its pages include `JoinLinkAccess`, which
+  resumes the session, checks the code on every request and sends active users straight in. The join page
+  (`JoinsController`, `JoinRequestForm`) always asks for an email and sends the sign-in code through the code page,
+  which returns to the confirmation (`Joins::MembershipsController`, `JoinForm`). The confirmation opens only for
+  the email typed on that device for that link (`session[:pending_join]`). Owners and admins copy the link from
+  the share page (`/accounts/<slug>/share`).
 - **Authorization**: `ApplicationPolicy` (Action Policy), which gets the user from the controller's
   `current_user`: the person's active user in the account of the URL, nil outside one. The `Authorization`
-  concern lets into an account only those `AccountPolicy#show?` allows, and sends anyone else to the menu.
+  concern lets into an account only those `AccountPolicy#show?` allows, and sends anyone else to the menu; a
+  refused `authorize!` sends the user back to the account's page with an alert. Roles are read only in policies
+  (`AccountPolicy#share?` is the first rule by role, through `User#administrator?`); Archspec stops controllers,
+  forms and components from calling `owner?`, `admin?` or `administrator?`.
 - **Configuration**: classes inheriting `ApplicationConfig` (Anyway Config), read as class methods: in
   `config/configs/` when boot code reads them, otherwise in `app/configs/` (domain layer, checked by Archspec). `enforce_config_schema` is on, so unknown keys in YAML or credentials raise. Use the `anyway-config`
   skill rather than reading `ENV` or credentials directly.
@@ -141,7 +151,9 @@ Building blocks and their base classes:
   `app/javascript/entrypoints/application.css`, and Tailwind only reads class names under `app/`.
 - **Metrics and logs**: Yabeda collects Rails, Active Job and Puma metrics; Puma exports them for Prometheus on
   `:9394/metrics` (not published by compose or Kamal). Processes share them through `tmp/prometheus/`, because
-  Solid Queue workers are forked. Production logs one line per request (Lograge).
+  Solid Queue workers are forked. Production logs one line per request (Lograge), with a join code in the path
+  logged as `[FILTERED]` (`JoinLinkLogFilter`); Thruster's request log is off, and parameters named `code` and
+  redirects to join pages are filtered everywhere.
 
 ## Planning and reviewing
 

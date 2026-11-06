@@ -74,6 +74,9 @@ COPY --chown=rails:rails --from=build /rails /rails
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
+# Lograge already logs each request, with the join code in its path filtered; Thruster's own line would print it
+ENV THRUSTER_LOG_REQUESTS=false
+
 # Start server via Thruster by default, this can be overwritten at runtime
 EXPOSE 80
 CMD ["./bin/thrust", "./bin/rails", "server"]

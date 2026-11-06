@@ -40,8 +40,10 @@ Rails.application.configure do
   # Change to "debug" to log everything (including potentially personally-identifiable information!).
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
 
-  # One line per request instead of Rails' multi-line request logs
+  # One line per request instead of Rails' multi-line request logs. A path that carries a join code logs it as
+  # [FILTERED], as Fizzy's filter_path_parameters routes do.
   config.lograge.enabled = true
+  config.lograge.custom_options = ->(event) { {path: JoinLinkLogFilter.call(event.payload[:path])} }
 
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = "/up"

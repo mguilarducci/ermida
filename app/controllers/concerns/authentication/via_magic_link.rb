@@ -10,11 +10,12 @@ module Authentication::ViaMagicLink
 
   private
 
-  # Without a magic link (an unknown email, or one past its code limit) the person sees the same page.
+  # Without a magic link (an unknown email, or one past its code limit) the person sees the same page. The code page
+  # belongs to no account, so a page inside one (a join link) leaves its slug behind.
   def redirect_to_session_magic_link(email_address, magic_link)
     remember_pending_authentication(email_address)
     flash[:magic_link_code] = magic_link.code if magic_link && AuthenticationConfig.show_code_on_page?
-    redirect_to session_magic_link_path, status: :see_other
+    redirect_to session_magic_link_path(script_name: nil), status: :see_other
   end
 
   def remember_pending_authentication(email_address)
