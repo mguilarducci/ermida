@@ -53,6 +53,36 @@ class AccountTest < ActiveSupport::TestCase
     assert_match(/\A\h{8}-\h{4}-7\h{3}-\h{4}-\h{12}\z/, create(:account).id)
   end
 
+  test "a new account gets a join code" do
+    assert_match(/\A\w{4}-\w{4}-\w{4}\z/, create(:account).join_code)
+  end
+
+  test "an account created with a join code keeps it" do
+    assert_equal "abcd-efgh-ijkm", create(:account, join_code: "abcd-efgh-ijkm").join_code
+  end
+
+  test "an account recognizes only its own join code" do
+    account = create(:account)
+
+    assert account.join_code?(account.join_code)
+    assert_not account.join_code?(create(:account).join_code)
+  end
+
+  test "two accounts never share a join code" do
+    account = create(:account)
+    duplicate = build(:account, join_code: account.join_code)
+
+    assert_not duplicate.save
+    assert duplicate.errors.added?(:join_code, :taken, value: account.join_code)
+  end
+
+  test "inspecting an account hides its join code" do
+    account = create(:account)
+
+    assert_no_match account.join_code, account.inspect
+    assert_includes account.inspect, %(join_code: [FILTERED])
+  end
+
   test "creating with an owner adds a system user and the owner, verified" do
     identity = create(:identity)
 

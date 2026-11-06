@@ -17,6 +17,12 @@ class Account < ApplicationRecord
   validates :name, presence: true, length: {maximum: 100}
   validate :name_must_produce_a_slug
   validates_db_uniqueness_of :slug
+  validates_db_uniqueness_of :join_code
+
+  # Model inspection does not print the join code, which lets anyone who has it join.
+  self.filter_attributes += %i[join_code]
+
+  before_validation :generate_join_code, on: :create
 
   def self.create_with_owner(name:, owner:)
     transaction do
@@ -27,11 +33,17 @@ class Account < ApplicationRecord
     end
   end
 
+  def join_code?(input) = Account::JoinCode.new(join_code).matches?(input)
+
   private
 
   def name_must_produce_a_slug
     if name.present? && normalize_friendly_id(name).blank?
       errors.add(:name, :invalid)
     end
+  end
+
+  def generate_join_code
+    self.join_code ||= Account::JoinCode.generate.to_s
   end
 end
