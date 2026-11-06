@@ -108,24 +108,18 @@ GEM
     brakeman (8.1.0)
       racc
     builder (3.3.0)
-    bundlebun (0.5.0.1.4.0-aarch64-linux-gnu)
+    bundlebun (0.5.1.1.4.4-aarch64-linux-gnu)
       json (~> 2.0)
-      zeitwerk (~> 2.5)
-    bundlebun (0.5.0.1.4.0-aarch64-linux-musl)
+    bundlebun (0.5.1.1.4.4-aarch64-linux-musl)
       json (~> 2.0)
-      zeitwerk (~> 2.5)
-    bundlebun (0.5.0.1.4.0-arm64-darwin)
+    bundlebun (0.5.1.1.4.4-arm64-darwin)
       json (~> 2.0)
-      zeitwerk (~> 2.5)
-    bundlebun (0.5.0.1.4.0-x86_64-darwin)
+    bundlebun (0.5.1.1.4.4-x86_64-darwin)
       json (~> 2.0)
-      zeitwerk (~> 2.5)
-    bundlebun (0.5.0.1.4.0-x86_64-linux-gnu)
+    bundlebun (0.5.1.1.4.4-x86_64-linux-gnu)
       json (~> 2.0)
-      zeitwerk (~> 2.5)
-    bundlebun (0.5.0.1.4.0-x86_64-linux-musl)
+    bundlebun (0.5.1.1.4.4-x86_64-linux-musl)
       json (~> 2.0)
-      zeitwerk (~> 2.5)
     bundler-audit (0.9.3)
       bundler (>= 1.2.0)
       thor (~> 1.0)
@@ -679,7 +673,7 @@ DEPENDENCIES
   benchmark
   bootsnap
   brakeman
-  bundlebun (>= 0.5, < 0.5.1)
+  bundlebun (>= 0.5, < 0.5.2)
   bundler-audit
   capybara
   capybara-lockstep
@@ -777,12 +771,12 @@ CHECKSUMS
   bootsnap (1.26.1) sha256=5b5bd90f8f13ea338627c1d56ffbe2ea25e743ac48c2afec1a9bea3a06a264e2
   brakeman (8.1.0) sha256=cfa9e5214e4925842f4bc849a64f8a7e6c5d0425fe98eac8d7b7bc60fdc17e07
   builder (3.3.0) sha256=497918d2f9dca528fdca4b88d84e4ef4387256d984b8154e9d5d3fe5a9c8835f
-  bundlebun (0.5.0.1.4.0-aarch64-linux-gnu) sha256=6580b60d03e47106c43fe56a509d05fae7091f4d612ab9fd4f0a90d8c1652288
-  bundlebun (0.5.0.1.4.0-aarch64-linux-musl) sha256=dbdfa44f7beabf6b04adb8c5eea40f88e88c51d76f0199a72f31bc0319279ce1
-  bundlebun (0.5.0.1.4.0-arm64-darwin) sha256=11fb2935cd517a84af6a84e3fadc7519243bf37a039ad1b120556161dd44bde6
-  bundlebun (0.5.0.1.4.0-x86_64-darwin) sha256=3bfa00907d5d726d55d3a68bb275796b8a858738ae51a8e06957ae6be8d4e8f9
-  bundlebun (0.5.0.1.4.0-x86_64-linux-gnu) sha256=b31aa1267e6465fba2f06ea8bb5d02fb5cdd2329ac73df62c2e6c67488b4c9b8
-  bundlebun (0.5.0.1.4.0-x86_64-linux-musl) sha256=87784be1c4b97ae922f2fb65d48752a44bf4da35692c0e6fa0b1ba6a0b8341b6
+  bundlebun (0.5.1.1.4.4-aarch64-linux-gnu) sha256=1df458fd49d34ed6a33680616e143af2ecfc73149e511d8b4c6267538149877e
+  bundlebun (0.5.1.1.4.4-aarch64-linux-musl) sha256=28e22d31e42b3f14ca04ab794c644ceedce1cbc3e44be3b54bfce3d4a49ae2a9
+  bundlebun (0.5.1.1.4.4-arm64-darwin) sha256=e381796e17a06ec7ec66521eaf9f925b60099f0f551f7bba6fd9b2a66a5a663b
+  bundlebun (0.5.1.1.4.4-x86_64-darwin) sha256=b78f6b6903245e3d3506e7b480fc705f126bddfa8db69b1235e50508b20f3aae
+  bundlebun (0.5.1.1.4.4-x86_64-linux-gnu) sha256=1bcd25794e4ed9f0a85dbe86460be1edae452dae62765090caa706b05165c52e
+  bundlebun (0.5.1.1.4.4-x86_64-linux-musl) sha256=9ae5cb4a76b753255d5ace5f4ace073577b82f5936467ce238893deceb26605b
   bundler (4.0.23) sha256=407ba8a1d928f412847f819aa5f8b6aef7c59fb51feb517112af8a165487287b
   bundler-audit (0.9.3) sha256=81c8766c71e47d0d28a0f98c7eed028539f21a6ea3cd8f685eb6f42333c9b4e9
   capybara (3.40.0) sha256=42dba720578ea1ca65fd7a41d163dd368502c191804558f6e0f71b391054aeef
