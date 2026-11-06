@@ -9,6 +9,9 @@ class User < ApplicationRecord
 
   scope :active, -> { where(active: true) }
 
+  # Owners and admins run the condominium.
+  def administrator? = owner? || admin?
+
   # Leaving is one-way: a person who comes back gets a new user.
   def deactivate
     update!(active: false, identity: nil)

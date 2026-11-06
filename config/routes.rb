@@ -29,4 +29,14 @@ Rails.application.routes.draw do
 
   # Inside an account (/accounts/edificio-aurora/) the root is that account's page; outside one it leads to the menu.
   root "landings#show"
+
+  # Inside an account
+  resource :share, only: :show
+  # A join link: /accounts/<slug>/join/<code>. The code is the secret, and the controller checks it, so an unknown
+  # code still reaches it instead of logging the raw path as an unmatched route.
+  get "join/:code", to: "joins#show", as: :join
+  post "join/:code", to: "joins#create"
+  scope "join/:code", module: :joins, as: :join do
+    resource :membership, only: %i[new create]
+  end
 end

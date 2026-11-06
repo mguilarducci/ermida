@@ -50,10 +50,20 @@ en:
       updated: Business updated.
     destroy:
       destroyed: Business deleted.
+  authorization:
+    denied: You can't open that page.
   landings:
     show:
+      share: Share the join link
       accounts: Your accounts
       sign_out: Sign out
+  shares:
+    show:
+      title: Join link
+      intro: Anyone with this link can join %{account} as a member. Share it where residents and service providers will see it, such as the building's group chat.
+      link: Join link
+      copy: Copy link
+      copied: Copied
   accounts:
     new:
       title: Create an account

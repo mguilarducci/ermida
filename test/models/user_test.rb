@@ -54,6 +54,10 @@ class UserTest < ActiveSupport::TestCase
     assert create(:user, identity:, account: user.account).persisted?
   end
 
+  test "owners and admins run the condominium" do
+    assert_equal %w[admin owner], User.roles.keys.select { build(:user, role: it).administrator? }.sort
+  end
+
   test "users without an identity coexist in one account" do
     account = create(:account)
     create(:user, :system, account:)
