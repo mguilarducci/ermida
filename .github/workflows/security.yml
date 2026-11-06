@@ -1,0 +1,111 @@
+# Security analyses published to GitHub code scanning, on every pull request,
+# each push to main and daily. Code scanning compares a pull request's alerts
+# with the latest analysis of main, so main needs one of its own: the daily run
+# also picks up advisories and CodeQL queries published since the last push.
+# No job fails on a finding; the ruleset on main blocks a merge that adds an
+# alert. Brakeman's analysis runs in ci.yml, where its warnings fail the check.
+#
+# Code scanning tells analyses apart by workflow file, job and category: a
+# renamed file, job or category leaves its old alerts open on main.
+name: Security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * *"
+
+permissions: {}
+
+# A pull request's newer run cancels the older one; every run on main or on
+# the schedule gets a group of its own and is never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # CodeQL's security-extended suite (.github/codeql/codeql-config.yml) over
+  # the Ruby code, the JavaScript and the workflows. None of them needs a build.
+  codeql:
+    name: codeql / ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read # CodeQL reads the workflow run
+      contents: read
+      security-events: write # uploads the results to code scanning
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ruby, javascript-typescript, actions]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: /language:${{ matrix.language }}
+
+  # zizmor's audit of the workflows and of the Dependabot configuration.
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write # uploads the results to code scanning
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: zizmor
+        env:
+          GH_TOKEN: ${{ github.token }} # zizmor's online audits
+          IMAGE: ghcr.io/zizmorcore/zizmor:1.31.1@sha256:42d409dbb851d4c5d35a058cf042b828bea1e3f2884378c526eb0974780e18d9
+        run: |
+          docker run --rm --volume "$GITHUB_WORKSPACE:/workspace:ro" --workdir /workspace --env GH_TOKEN \
+            "$IMAGE" --persona=regular --no-exit-codes --color=never --format=sarif . > zizmor.sarif
+
+      - uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: zizmor.sarif
+          category: zizmor
+
+  # Grype's analysis of Gemfile.lock and bun.lock: vulnerable and malicious
+  # packages. bundler-audit and bun audit in ci.yml stay the gates that fail.
+  grype:
+    name: grype
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write # uploads the results to code scanning
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - id: scan
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+        env:
+          GRYPE_DB_REQUIRE_UPDATE_CHECK: "true"
+          GRYPE_DB_VALIDATE_AGE: "true"
+          GRYPE_CHECK_FOR_APP_UPDATE: "false"
+        with:
+          path: "."
+          fail-build: false
+          output-format: sarif
+
+      - uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+          category: grype

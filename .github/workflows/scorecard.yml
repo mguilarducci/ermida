@@ -1,0 +1,67 @@
+# OpenSSF Scorecard's analysis, published to GitHub code scanning: each check
+# below 10 is an alert there, with its reason and remediation. Adapted from
+# ossf/scorecard-action's examples/scorecard.yml.
+#
+# On main (a push, weekly, and on a change to a branch protection rule) the
+# action reads the repository through GitHub's API, runs every check and
+# publishes the result to api.scorecard.dev, signed with the job's OIDC token.
+# On a pull request it reads only the checked-out files and publishes nothing,
+# so code scanning shows what the pull request changes in them. It never fails
+# on a score.
+#
+# Publishing makes api.scorecard.dev check this file: no env or defaults at the
+# top or in the job, no write permission at the top, id-token: write only in
+# the job that runs the action, an Ubuntu runner, and only steps that use
+# actions on its list (checkout, upload-artifact, upload-sarif, the action
+# itself), no run step.
+name: Scorecard
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # Weekly as well: the Maintained check counts the last 90 days of activity.
+  schedule:
+    - cron: "43 6 * * 1"
+  # The Branch-Protection check reads main's rules: rerun when one changes.
+  branch_protection_rule:
+
+permissions: {}
+
+# A pull request's newer run cancels the older one; each commit on main gets a
+# group of its own and is never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  analysis:
+    name: analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      security-events: write # uploads the results to code scanning
+      id-token: write # signs the results published to api.scorecard.dev
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # Only main publishes: a pull request's run reads only its files.
+          publish_results: ${{ github.event_name != 'pull_request' }}
+
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: scorecard-sarif
+          path: results.sarif
+          retention-days: 5
+
+      - if: ${{ always() }}
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: results.sarif
