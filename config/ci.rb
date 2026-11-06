@@ -12,6 +12,8 @@ CI.run do
   # Coverage left by earlier runs would count toward this one's merge
   step "Tests: Reset coverage", "rm -rf \"${COVERAGE_DIR:-coverage}\""
   step "Tests: Rails", "bin/rails db:test:prepare test"
+  # Boots the app the way the server and console do; the test steps go through rake, which hides a broken boot
+  step "Tests: Boot", "bin/rails runner 'puts \"booted\"'"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
   # Needs a browser: CHROME_URL (set by `dip ci`) or a local Chrome
