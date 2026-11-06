@@ -65,6 +65,13 @@ interaction:
     compose:
       run_options: [no-deps]
 
+  coverage:
+    description: Copy the coverage reports from the container to coverage/ (merged one in coverage/merged/index.html)
+    service: rails
+    command: sh -c 'rm -rf coverage && cp -R "$COVERAGE_DIR" coverage'
+    compose:
+      run_options: [no-deps]
+
   ci:
     description: Run bin/ci (config/ci.rb) with the chrome service for system tests, then stop it
     runner: local

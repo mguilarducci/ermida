@@ -228,6 +228,9 @@ group :test do
 
   # Profile and speed up the test suite
   gem "test-prof"
+
+  # Line coverage; the floor is checked on the merged suites (lib/tasks/coverage.rake)
+  gem "simplecov", require: false
 end
 
 gem "rails-hyperdrive", "~> 0.10.1", group: :development

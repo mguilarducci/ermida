@@ -1,6 +1,6 @@
 # The app's checks on every pull request and each push to main: the security
 # scans of the code and of its dependencies, lint, the layer boundaries, and
-# the tests. bin/ci runs the same steps locally.
+# the tests with their coverage floor. bin/ci runs the same steps locally.
 #
 # Actions are pinned by commit SHA with their version in a comment; Dependabot
 # (.github/dependabot.yml) moves the pins.
@@ -172,6 +172,16 @@ jobs:
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: bin/rails db:test:prepare test
 
+      # For the coverage job, which merges it with the system tests'
+      - name: Keep coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-test
+          path: coverage/.resultset.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 5
+
   system-test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -216,3 +226,43 @@ jobs:
           name: screenshots
           path: ${{ github.workspace }}/tmp/screenshots
           if-no-files-found: ignore
+
+      # For the coverage job, which merges it with the other tests'
+      - name: Keep coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-system
+          path: coverage/.resultset.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 5
+
+  # Line coverage of both test jobs together, against the floor in lib/tasks/coverage.rake
+  coverage:
+    needs: [test, system-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+        with:
+          bundler-cache: true
+
+      # Each into its own folder: coverage/coverage-test/, coverage/coverage-system/
+      - name: Download coverage
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: coverage-*
+          path: coverage
+
+      - name: Check coverage
+        env:
+          RAILS_ENV: test
+        run: bin/rails coverage:check

@@ -46,6 +46,10 @@ x-backend: &backend
     BUN_INSTALL_CACHE_DIR: /usr/local/bundle/_bun
     # The container user has no home (HOME is /, not writable), where bundler-audit would keep its advisory database
     BUNDLER_AUDIT_DB: /usr/local/bundle/_bundler_audit
+    # SimpleCov's coverage (.simplecov), one folder per checkout. Not in ./coverage: the parallel test workers
+    # each add their result to coverage/.resultset.json under a flock, which the macOS bind mount doesn't honor,
+    # so two workers finishing together dropped one's result. `dip coverage` copies the report out.
+    COVERAGE_DIR: /usr/local/bundle/_coverage${PWD}
     MALLOC_ARENA_MAX: 2
     HISTFILE: /usr/local/hist/.bash_history
     PSQL_HISTFILE: /usr/local/hist/.psql_history

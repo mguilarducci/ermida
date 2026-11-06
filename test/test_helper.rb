@@ -1,3 +1,9 @@
+# Before anything loads the app, or the files it loads go uncovered. Settings in .simplecov; the floor is
+# checked on the merged suites by `bin/rails coverage:check`.
+require "simplecov"
+SimpleCov.command_name "test"
+SimpleCov.start
+
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
