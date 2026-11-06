@@ -53,3 +53,6 @@ node_modules
 
 # Test coverage (SimpleCov)
 /coverage
+
+# This checkout's Postgres port, written by bin/setup in a git worktree (config/local_database.rb)
+/.ermida-db-port

@@ -1,0 +1,24 @@
+# Tools for developing ermida on the host, as 37signals does with Fizzy. bin/setup installs mise when
+# it is missing, trusts this file and runs `mise install`; the git hooks (prek.toml) run every tool
+# through `mise exec`, so they get these versions even outside an activated shell.
+min_version = "2026.11.0"
+
+[settings]
+# Ruby comes from .ruby-version, which CI (ruby/setup-ruby) and the production Dockerfile also read
+idiomatic_version_file_enable_tools = ["ruby"]
+
+[tools]
+prek = "0.5.7"
+# The versions .github/workflows/checks.yml runs; change them together
+gitleaks = "8.30.1"
+actionlint = "1.7.12"
+
+# System packages on Arch/Omarchy, installed by bin/setup through `mise bootstrap packages`.
+# macOS gets the same ones from the Brewfile.
+[bootstrap.packages]
+"pacman:libvips" = "latest"
+"pacman:libyaml" = "latest"
+# psql for bin/rails dbconsole
+"pacman:postgresql" = "latest"
+# System tests (Cuprite finds chromium on PATH)
+"pacman:chromium" = "latest"
