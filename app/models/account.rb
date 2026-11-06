@@ -33,6 +33,19 @@ class Account < ApplicationRecord
     end
   end
 
+  # A person joins as a member, verified by the code they typed. One who is already an active user stays as they
+  # are. One whose user was deactivated gets a new user, since leaving is one-way. A join that loses a race with
+  # another join for the same person gets the user that one created.
+  def join(identity)
+    raise ArgumentError, "joining needs a person" if identity.nil?
+
+    users.active.find_by(identity:) || users.create!(identity:, role: :member, verified_at: Time.current)
+  rescue ActiveRecord::RecordInvalid => error
+    raise unless error.record.errors.of_kind?(:identity_id, :taken)
+
+    users.active.find_by!(identity:)
+  end
+
   def join_code?(input) = Account::JoinCode.new(join_code).matches?(input)
 
   private

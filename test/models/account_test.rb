@@ -96,6 +96,79 @@ class AccountTest < ActiveSupport::TestCase
     assert owner.verified_at
   end
 
+  test "a person with no user in the account joins as an active, verified member" do
+    account = create(:account)
+    identity = create(:identity)
+
+    user = account.join(identity)
+
+    assert_equal [account, identity], [user.account, user.identity]
+    assert user.member?
+    assert user.active
+    assert user.verified_at
+  end
+
+  test "an active user who joins again stays the same user" do
+    user = create(:user)
+
+    assert_no_difference -> { User.count } do
+      assert_equal user, user.account.join(user.identity)
+    end
+  end
+
+  test "an owner who joins keeps the owner role" do
+    owner = create(:user, role: :owner)
+
+    assert owner.account.join(owner.identity).owner?
+  end
+
+  test "a person whose user was deactivated joins as a new member" do
+    former = create(:user, role: :admin)
+    identity = former.identity
+    former.deactivate
+
+    user = former.account.join(identity)
+
+    assert_not_equal former, user
+    assert user.member?
+    assert user.active
+    assert_not former.reload.active
+    assert_nil former.identity
+  end
+
+  test "joining needs a person" do
+    account = create(:account)
+    create(:user, :system, account:)
+
+    assert_raises(ArgumentError) { account.join(nil) }
+  end
+
+  test "a person whose user a concurrent join created gets that user" do
+    account = create(:account)
+    identity = create(:identity)
+    winner = nil
+    user = nil
+    active_users = account.users.active
+
+    # The concurrent join inserts its user right after this join looked and found none.
+    active_users.stub(:find_by, ->(**) {
+      winner = create(:user, account:, identity:)
+      nil
+    }) do
+      account.users.stub(:active, active_users) { user = account.join(identity) }
+    end
+
+    assert_equal winner, user
+  end
+
+  test "an inactive user that still holds the person is not reactivated by joining" do
+    user = create(:user)
+    user.update_columns(active: false)
+
+    assert_raises(ActiveRecord::RecordNotFound) { user.account.join(user.identity) }
+    assert_not user.reload.active
+  end
+
   test "creating with an owner and a blank name raises and creates nothing" do
     identity = create(:identity)
 
