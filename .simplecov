@@ -4,8 +4,9 @@ SimpleCov.configure do
   # Groups by layer, and merges the coverage of the workers `parallelize` forks
   load_profile "rails"
 
-  # Every file counts, loaded or not: tests don't eager load, so a file no test touches would
-  # otherwise be left out instead of counting as uncovered
+  # Every file counts, loaded or not; a file no test loads would otherwise be left out instead of counting
+  # as uncovered. Where CI is set (GitHub CI, bin/ci) the test environment eager loads every file at boot,
+  # which counts its class and def lines as run, so there only method bodies show what the tests reach.
   cover "{app,lib}/**/*.rb"
   # Lookbook previews run only in development
   skip %r{\Aapp/components/(.+/)?(application_view_component_)?preview\.rb\z}

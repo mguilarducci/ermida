@@ -20,7 +20,7 @@ dip rails test                             # whole suite
 dip rails test test/models/foo_test.rb:42  # one file, or one test by line
 dip rails test:system                      # system tests, against the chrome service
 dip rails coverage:check                   # merged coverage of the last runs, against the floor
-dip coverage                               # copy the coverage report to coverage/index.html
+dip coverage                               # copy the reports to coverage/ (merged one: coverage/merged/index.html)
 dip ci                                     # bin/ci: the whole local CI, system tests included
 dip rubocop                                # Standard, through RuboCop (-a to autocorrect)
 dip archspec check                         # layer boundaries from Archspec.rb
@@ -60,8 +60,10 @@ dip bash                                   # shell in the app container
   merged). Only `bin/rails coverage:check` enforces the floor, on the merged suites, so a run of one file never
   fails on coverage. Raise the floor when coverage rises. In the containers the results live in the bundle
   volume (`COVERAGE_DIR`), not in `coverage/`: the workers lock the shared result file with flock, which the
-  macOS bind mount ignores, so writing there drops a worker's result now and then. `dip coverage` copies the
-  report to `coverage/index.html`.
+  macOS bind mount ignores, so writing there drops a worker's result now and then. `coverage:check` merges
+  whatever results the last runs left there, and writes its merged report to `merged/`; `dip ci` resets them
+  first, so it is the local check to trust. `dip coverage` copies the reports to `coverage/` (the last run's
+  in `coverage/index.html`, the merged one in `coverage/merged/index.html`).
 - `.github/workflows/security.yml` runs CodeQL (Ruby, JavaScript, workflows; `.github/codeql/codeql-config.yml`),
   zizmor and grype on pull requests, on `main` and daily, and `scorecard.yml` runs OpenSSF Scorecard. They
   publish to code scanning and never fail on a finding. `dependency-review.yml` fails a pull request that adds a

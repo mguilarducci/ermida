@@ -66,7 +66,7 @@ interaction:
       run_options: [no-deps]
 
   coverage:
-    description: Copy the latest coverage report from the container to coverage/ (open coverage/index.html)
+    description: Copy the coverage reports from the container to coverage/ (merged one in coverage/merged/index.html)
     service: rails
     command: sh -c 'rm -rf coverage && cp -R "$COVERAGE_DIR" coverage'
     compose:
