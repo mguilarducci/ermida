@@ -9,14 +9,17 @@ CI.run do
   step "Security: Gem audit", "bin/bundler-audit check --update"
   step "Security: JavaScript package audit", "bin/bun audit"
   step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+  # The scan the gitleaks job in .github/workflows/checks.yml runs; .gitleaks.toml leaves out the ignored output
+  # directories a fresh CI checkout doesn't have
+  step "Security: Secrets", "mise exec -- gitleaks dir --redact=50 --no-banner ."
   # Coverage left by earlier runs would count toward this one's merge
-  step "Tests: Reset coverage", "rm -rf \"${COVERAGE_DIR:-coverage}\""
+  step "Tests: Reset coverage", "rm -rf coverage"
   step "Tests: Rails", "bin/rails db:test:prepare test"
   # Boots the app the way the server and console do; the test steps go through rake, which hides a broken boot
   step "Tests: Boot", "bin/rails runner 'puts \"booted\"'"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
-  # Needs a browser: CHROME_URL (set by `dip ci`) or a local Chrome
+  # Needs Chrome or Chromium on the machine, which bin/setup installs
   step "Tests: System", "env PARALLEL_WORKERS=1 bin/rails test:system"
   step "Tests: Coverage", "bin/rails coverage:check"
 

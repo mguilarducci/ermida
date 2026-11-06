@@ -4,7 +4,7 @@ module SystemSessionTestHelper
     cookie_jar = ActionDispatch::TestRequest.create.cookie_jar
     cookie_jar.signed[:session_id] = session.id
 
-    # Open an app page first so the cookie gets this app's host, which differs when Chrome runs remotely.
+    # Open an app page first so the cookie gets the host and port Capybara serves this app on.
     visit new_session_path
     page.driver.browser.cookies.set(
       name: "session_id",

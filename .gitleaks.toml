@@ -1,0 +1,17 @@
+# gitleaks, run by bin/ci and by the gitleaks job in .github/workflows/checks.yml over the working tree.
+# The default rules, minus ignored output directories: a fresh CI checkout has none of them, so leaving
+# them out keeps a local scan finding what CI finds.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignored output that is never committed"
+paths = [
+  '''^node_modules/''',
+  '''^log/''',
+  '''^tmp/''',
+  '''^coverage/''',
+  '''^storage/''',
+  '''^public/vite''',
+  '''^\.bundle/''',
+]

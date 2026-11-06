@@ -14,16 +14,14 @@ require "vcr"
 require "n_plus_one_control/minitest"
 require "with_model/minitest"
 
-# Tests never reach the network. WebMock blocks real HTTP except to the test server and to the chrome service
-# system tests drive (CHROME_URL); a test that needs a real call records it once with VCR and replays it after.
-chrome_host = URI(ENV["CHROME_URL"]).host if ENV["CHROME_URL"]
-WebMock.disable_net_connect!(allow_localhost: true, allow: [chrome_host].compact)
+# Tests never reach the network. WebMock blocks real HTTP except to the test server; a test that needs a real call
+# records it once with VCR and replays it after.
+WebMock.disable_net_connect!(allow_localhost: true)
 
 VCR.configure do |config|
   config.cassette_library_dir = "test/cassettes"
   config.hook_into :webmock
   config.ignore_localhost = true
-  config.ignore_hosts(*[chrome_host].compact)
 end
 
 # Builds the test assets once, before parallelize forks the workers (config/vite.json autoBuild). Otherwise, with no

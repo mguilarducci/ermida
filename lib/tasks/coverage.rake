@@ -7,8 +7,8 @@ namespace :coverage do
   task :check do
     require "simplecov"
 
-    # Both suites write to <coverage directory>/.resultset.json, except in CI, which downloads each job's into its
-    # own folder under it. The directory is coverage/, or COVERAGE_DIR in the development containers (.simplecov).
+    # Both suites write to coverage/.resultset.json, except in CI, which downloads each job's into its own folder
+    # under coverage/.
     # The merge writes its own result and report to merged/, left out here: read back next time, that old merge
     # would keep counting lines no current test covers.
     merged = File.join(SimpleCov.coverage_path, "merged")
