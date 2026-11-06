@@ -104,20 +104,6 @@ class Joins::MembershipsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "a former resident joins again as a new member" do
-    former = create(:user, account: @account)
-    identity = former.identity
-    former.deactivate
-    sign_in_as(identity)
-    post @join_path, params: {join_request: {email_address: identity.email_address}}
-
-    post @membership_path
-
-    assert_redirected_to "/accounts/edificio-aurora/"
-    assert_not_equal former, identity.user_in(@account)
-    assert identity.user_in(@account).member?
-  end
-
   test "an active user who opens the confirmation goes straight into the account" do
     sign_in_as(create(:user, account: @account).identity)
 

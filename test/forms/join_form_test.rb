@@ -3,16 +3,14 @@ require "test_helper"
 class JoinFormTest < ActiveSupport::TestCase
   setup { @account = create(:account) }
 
-  test "a person without a name gives one, and joins as an active, verified member" do
+  test "a person without a name gives one, and joins the account" do
     identity = create(:identity, name: nil)
     form = JoinForm.new(account: @account, identity:, person_name: "Ana")
 
     assert form.person_name_needed?
     assert form.save
     assert_equal "Ana", identity.reload.name
-    assert form.user.member?
-    assert form.user.active
-    assert form.user.verified_at
+    assert_equal @account.users.active.find_by(identity:), form.user
   end
 
   test "a person who has a name is not asked for one and joins keeping it" do

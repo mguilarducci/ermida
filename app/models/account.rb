@@ -11,6 +11,9 @@ class Account < ApplicationRecord
   friendly_id :name, use: %i[slugged sequentially_slugged reserved],
     reserved_words: RESERVED_SLUGS, treat_reserved_as_conflict: true
 
+  # Model inspection does not print the join code, which lets anyone who has it join.
+  self.filter_attributes += %i[join_code]
+
   has_many :users
 
   # The cap also keeps the slug well under the size Postgres accepts in its unique index.
@@ -18,9 +21,6 @@ class Account < ApplicationRecord
   validate :name_must_produce_a_slug
   validates_db_uniqueness_of :slug
   validates_db_uniqueness_of :join_code
-
-  # Model inspection does not print the join code, which lets anyone who has it join.
-  self.filter_attributes += %i[join_code]
 
   before_validation :generate_join_code, on: :create
 
