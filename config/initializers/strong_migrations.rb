@@ -21,8 +21,9 @@ StrongMigrations.auto_analyze = true
 #   end
 # end
 
-# Remove invalid indexes when rerunning migrations
-# StrongMigrations.remove_invalid_indexes = true
+# Remove invalid indexes when rerunning migrations: an interrupted concurrent build leaves its index invalid, and
+# without this a rerun with if_not_exists keeps it
+StrongMigrations.remove_invalid_indexes = true
 
 # Make some operations safe by default
 # See https://github.com/ankane/strong_migrations#safe-by-default
