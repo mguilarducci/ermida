@@ -90,7 +90,7 @@ provision:
   # and the lockfile). It lands in the bundle volume, next to the gems.
   - dip bundle plugin install bundler-hyperdrive --version 0.2.0
   - dip bash -c "bin/setup --skip-server"
-  # Git pre-commit hooks from prek.toml, run on the host. --force writes .git/hooks/pre-commit
-  # even when a global core.hooksPath is set (prek refuses otherwise); such a global hooks
-  # directory must chain to .git/hooks for these to run.
+  # Git hooks from prek.toml (pre-commit, commit-msg, pre-push), run on the host. --force writes
+  # them to .git/hooks even when a global core.hooksPath is set (prek refuses otherwise); such a
+  # global hooks directory must chain to .git/hooks for these to run.
   - mise exec prek@0.5.7 -- prek install --force

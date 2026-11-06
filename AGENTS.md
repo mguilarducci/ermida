@@ -43,15 +43,21 @@ dip bash                                   # shell in the app container
   capybara-lockstep in the layout. The dev image has no Chrome: in Docker they connect to the `chrome` service
   (browserless) through `CHROME_URL`, which only `dip rails test:system` and `dip ci` set (they stop the
   service when they finish), so plain `dip rails test test/system/...` fails. GitHub CI launches its own Chrome.
-- The pre-commit hooks (`prek.toml`) run RuboCop and archspec through dip, so Docker must be running to commit.
-  Run them by hand with `mise exec prek@0.5.7 -- prek run --all-files`.
+- The git hooks (`prek.toml`): on commit, gitleaks on the staged changes, RuboCop and archspec through dip (so
+  Docker must be running to commit) and actionlint on changed workflows; on the commit message, the Conventional
+  Commits check (`bin/hooks/conventional-commit`); on push, a check that the branch contains the remote's latest
+  `main` (`bin/hooks/branch-on-main`; rebase onto it when it fails). gitleaks and actionlint run through mise.
+  Run them by hand with `mise exec prek@0.5.7 -- prek run --all-files` (add `--stage pre-push` for the push
+  check). A clone set up before the commit-msg and pre-push hooks existed installs them with
+  `mise exec prek@0.5.7 -- prek install --force`.
 - CI is `.github/workflows/ci.yml`: brakeman (its findings also go to code scanning), bundler-audit,
   `bun audit`, rubocop, archspec, actionlint, tests and system tests. `bin/ci` (`config/ci.rb`) runs a local
   version: setup, rubocop, archspec, the audits, brakeman, tests, seeds and system tests.
 - `.github/workflows/security.yml` runs CodeQL (Ruby, JavaScript, workflows; `.github/codeql/codeql-config.yml`),
   zizmor and grype on pull requests, on `main` and daily, and `scorecard.yml` runs OpenSSF Scorecard. They
   publish to code scanning and never fail on a finding. `dependency-review.yml` fails a pull request that adds a
-  vulnerable dependency or one under a license outside its list.
+  vulnerable dependency or one under a license outside its list. `pr-title.yml` fails a pull request whose title,
+  or whose only commit's subject, is not a Conventional Commit.
 - Workflows pin every action by commit SHA with its version in a comment, start from `permissions: {}` and grant
   each job only what it uses, check out with `persist-credentials: false`, and set `timeout-minutes`. Dependabot
   (`.github/dependabot.yml`) updates gems, bun packages and actions weekly, once a version is 7 days old.
@@ -155,8 +161,13 @@ and review cite it as `(pack: layered-rails, <file>)`.
   or reviewing code, and update it when a change establishes or retires a rule.
 - `REVIEW.md`: how review behaves here (it includes `CODING_STANDARDS.md`). Read it before reviewing code, and
   update it when the team's review policy changes.
-- Commit messages are one imperative line that states the outcome and why, e.g. "Keep bundlebun below 0.5.1
-  so the app boots outside rake".
+- Commit messages and pull request titles are Conventional Commits, `type(scope)!: description`, whose
+  description is one imperative line, lowercase, that states the outcome and why, e.g.
+  "feat(auth): let people sign in with a code sent to their email" or
+  "fix(deps): keep bundlebun below 0.5.1 so the app boots outside rake". Types: build, chore, ci, docs, feat,
+  fix, perf, refactor, revert, style, test; `!` marks a breaking change. The scope is optional and names the
+  area (auth, accounts, deps, ci). `main` takes changes only by squash, under the pull request's title, or
+  under its commit's subject when it has only one.
 - Gem version constraints in the `Gemfile` carry a comment when they pin around a bug; keep it current.
 - After a solved, verified problem, automatically invoke the `ce-compound` skill with
   `mode:non-interactive` at the completion checkpoint only when the work produced durable project

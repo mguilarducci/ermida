@@ -1,0 +1,15 @@
+#!/bin/sh
+# pre-push hook (prek.toml): a pushed branch must contain the remote's latest main, so it is
+# checked and reviewed against what it will be squashed onto. prek runs it once per pushed ref,
+# with the remote in PRE_COMMIT_REMOTE_NAME and the commit being pushed in PRE_COMMIT_TO_REF.
+set -e
+remote="${PRE_COMMIT_REMOTE_NAME:-origin}"
+pushed="${PRE_COMMIT_TO_REF:-HEAD}"
+
+git fetch --quiet "$remote" main
+main=$(git rev-parse FETCH_HEAD)
+
+if ! git merge-base --is-ancestor "$main" "$pushed"; then
+  echo "pre-push: ${PRE_COMMIT_LOCAL_BRANCH:-HEAD} is behind $remote/main; rebase it onto $remote/main first." >&2
+  exit 1
+fi
