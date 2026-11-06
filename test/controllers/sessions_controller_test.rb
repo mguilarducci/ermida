@@ -57,6 +57,38 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "the sign-in page under an account's slug goes to the home page" do
+    create(:account, name: "Edifício Aurora")
+
+    get "/accounts/edificio-aurora/session/new"
+
+    assert_redirected_to "/"
+  end
+
+  test "an email posted under an account's slug goes to the home page and sends no code" do
+    create(:account, name: "Edifício Aurora")
+    create(:identity, email_address: "ana@example.com")
+
+    assert_no_enqueued_emails do
+      assert_no_difference "MagicLink.count" do
+        post "/accounts/edificio-aurora/session", params: {sign_in: {email_address: "ana@example.com"}}
+      end
+    end
+
+    assert_redirected_to "/"
+  end
+
+  test "a signed-in person who is not a user of the account, on its sign-in page, goes to the menu" do
+    create(:account, name: "Edifício Aurora")
+    identity = create(:identity)
+    create(:user, identity:)
+    sign_in_as(identity)
+
+    get "/accounts/edificio-aurora/session/new"
+
+    assert_redirected_to "/session/menu"
+  end
+
   test "past 5 codes in 15 minutes for one email, more requests from other addresses look the same and send nothing" do
     identity = create(:identity, email_address: "ana@example.com")
     # The same request repeated reads the same rows each time, which Prosopite would report as an N+1.

@@ -71,6 +71,26 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_account_path
   end
 
+  test "the sign-up page under an account's slug goes to the home page" do
+    create(:account, name: "Edifício Aurora")
+
+    get "/accounts/edificio-aurora/signup/new"
+
+    assert_redirected_to "/"
+  end
+
+  test "an email posted to sign-up under an account's slug goes to the home page and creates nothing" do
+    create(:account, name: "Edifício Aurora")
+
+    assert_no_enqueued_emails do
+      assert_no_difference %w[Identity.count MagicLink.count] do
+        post "/accounts/edificio-aurora/signup", params: {signup: {email_address: "ana@example.com"}}
+      end
+    end
+
+    assert_redirected_to "/"
+  end
+
   test "the sign-in page links to sign-up" do
     get new_session_path
 

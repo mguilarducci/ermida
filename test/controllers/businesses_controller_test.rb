@@ -6,6 +6,16 @@ class BusinessesControllerTest < ActionDispatch::IntegrationTest
 
   setup { sign_in_as(create(:identity)) }
 
+  test "businesses under an account's slug go to the home page" do
+    identity = create(:identity)
+    account = create(:user, identity:).account
+    sign_in_as(identity)
+
+    get "/accounts/#{account.slug}/businesses"
+
+    assert_redirected_to "/"
+  end
+
   test "index lists businesses alphabetically, each linking to its slug" do
     create(:business, name: "Bravo")
     create(:business, name: "Alpha")

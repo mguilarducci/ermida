@@ -20,6 +20,11 @@ VCR.configure do |config|
   config.ignore_hosts(*[chrome_host].compact)
 end
 
+# Builds the test assets once, before parallelize forks the workers (config/vite.json autoBuild). Otherwise, with no
+# previous build, every worker starts its own when its first page renders, and some read the manifest while another
+# build is rewriting it ("can't find entrypoints/application.css in the manifests"). Skipped when nothing changed.
+ViteRuby.commands.build
+
 # n_plus_one_control runs the block several times on purpose to count its queries, which Prosopite would report as
 # an N+1
 module PauseProsopiteInNPlusOneControl

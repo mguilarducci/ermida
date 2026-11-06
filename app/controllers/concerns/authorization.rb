@@ -1,4 +1,7 @@
 # Inside an account, only its active users get in (AccountPolicy#show?). Anyone else goes back to the menu.
+# Runs after Authentication and reads its `authenticated?`; Authentication never refers back to this concern.
+# A page that lets signed-in people who are not users of the account in (a join link) declares
+# `allow_unauthorized_access` and authorizes the visitor itself.
 module Authorization
   extend ActiveSupport::Concern
 
