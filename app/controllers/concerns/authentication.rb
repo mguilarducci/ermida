@@ -39,7 +39,7 @@ module Authentication
   # cookie session, which overflows past 4 KB, so a long URL is not remembered rather than turned into a 500.
   def request_authentication
     if request.get? && request.fullpath.bytesize <= 1.kilobyte
-      session[:return_to_after_authenticating] = request.fullpath
+      return_after_authenticating_to request.fullpath
     end
     redirect_to new_session_path(script_name: nil)
   end
