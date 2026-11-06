@@ -37,8 +37,6 @@
 /config/*.local.yml
 /config/credentials/local.*
 
-# Host UID/GID for the development containers (written by `dip provision`).
-/.dockerdev/.env
 .hyperdrive/discover_cache.json
 
 # Vite Ruby
@@ -53,3 +51,6 @@ node_modules
 
 # Test coverage (SimpleCov)
 /coverage
+
+# This checkout's Postgres port, written by bin/setup in a git worktree (config/local_database.rb)
+/.ermida-db-port

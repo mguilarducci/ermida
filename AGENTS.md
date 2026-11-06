@@ -10,25 +10,33 @@ that before adding a gem that might duplicate one already there.
 
 ## Commands
 
-Development runs in Docker through [dip](https://github.com/bibendi/dip) (setup in `.dockerdev/`, separate from
-the production `Dockerfile` used by Kamal). Run Ruby, Rails and Bun commands through `dip`, not on the host.
+Development runs on the host, as 37signals runs Fizzy: mise installs Ruby and the tools (`.mise.toml`), Homebrew
+(`Brewfile`, macOS) or pacman (`[bootstrap.packages]`, Arch/Omarchy) the system packages, and only Postgres runs
+in Docker. The production `Dockerfile` (Kamal) is separate.
 
 ```sh
-dip provision                              # build image, start Postgres, bundle, bun install, db:prepare, install prek hooks
-dip rails s                                # server on :3000 plus the Vite dev server on :3036
-dip rails test                             # whole suite
-dip rails test test/models/foo_test.rb:42  # one file, or one test by line
-dip rails test:system                      # system tests, against the chrome service
-dip rails coverage:check                   # merged coverage of the last runs, against the floor
-dip coverage                               # copy the reports to coverage/ (merged one: coverage/merged/index.html)
-dip ci                                     # bin/ci: the whole local CI, system tests included
-dip rubocop                                # Standard, through RuboCop (-a to autocorrect)
-dip archspec check                         # layer boundaries from Archspec.rb
-dip bun add <pkg>                          # JavaScript packages
-dip bash                                   # shell in the app container
+bin/setup                                  # install everything, start Postgres, db:prepare, install the git hooks, then bin/dev
+bin/setup --skip-server                    # the same without starting the server
+bin/dev                                    # server on :3000 (PORT moves it) plus the Vite dev server on :3036
+bin/rails test                             # whole suite
+bin/rails test test/models/foo_test.rb:42  # one file, or one test by line
+bin/rails test:system                      # system tests, with the Chrome installed on the machine
+bin/rails coverage:check                   # merged coverage of the last runs, against the floor
+bin/ci                                     # the whole local CI, system tests included
+bin/rubocop                                # Standard, through RuboCop (-a to autocorrect)
+bundle exec archspec check                 # layer boundaries from Archspec.rb
+bin/bun add <pkg>                          # JavaScript packages
+bin/rails dbconsole                        # psql on this checkout's development database
 ```
 
-- `RAILS_ENV` is empty in the containers on purpose, so `bin/rails test` switches to test by itself.
+- Run them from a shell where mise is activated, or prefix them with `mise exec --`.
+- Each checkout has its own Postgres 18 on its own port. The main checkout uses 5432: `bin/setup` uses a Postgres
+  already listening there (it must accept `postgres`/`postgres`), or starts the `ermida-postgres` container. A git
+  worktree gets the `ermida-postgres-<worktree directory>` container on the first free port from 5433, recorded in
+  `.ermida-db-port` (`config/local_database.rb`; `ERMIDA_DB_PORT` overrides it). A worktree that has not run
+  `bin/setup` refuses to boot rather than use the main checkout's databases.
+- `bin/dev` runs Rails and Vite through foreman (`Procfile.dev`), which keeps the terminal from them: to stop at
+  `debugger` or `binding.irb`, run `bin/rails server` and `bin/vite dev` in two terminals instead.
 - Development-only tools under http://localhost:3000: `/jobs` (Mission Control), `/pghero`, `/letter_opener`
   (every email sent in development lands here) and `/lookbook` (component previews). None is mounted in
   production.
@@ -42,30 +50,26 @@ dip bash                                   # shell in the app container
   Rate limits count in the controller cache, a memory store in tests that integration tests clear before each
   test; a test that repeats one request to trip a limit wraps the repeats in `Prosopite.pause`.
 - System tests (`test/system/`, `ApplicationSystemTestCase`) drive headless Chrome through Cuprite, with
-  capybara-lockstep in the layout. The dev image has no Chrome: in Docker they connect to the `chrome` service
-  (browserless) through `CHROME_URL`, which only `dip rails test:system` and `dip ci` set (they stop the
-  service when they finish), so plain `dip rails test test/system/...` fails. GitHub CI launches its own Chrome.
-- The git hooks (`prek.toml`): on commit, gitleaks on the staged changes, RuboCop and archspec through dip (so
-  Docker must be running to commit) and actionlint on changed workflows; on the commit message, the Conventional
-  Commits check (`bin/hooks/conventional-commit`); on push, a check that the branch contains the remote's latest
-  `main` (`bin/hooks/branch-on-main`; rebase onto it when it fails). gitleaks and actionlint run through mise.
-  Run them by hand with `mise exec prek@0.5.7 -- prek run --all-files` (add `--stage pre-push` for the push
-  check). A clone set up before the commit-msg and pre-push hooks existed installs them with
-  `mise exec prek@0.5.7 -- prek install --force`.
+  capybara-lockstep in the layout. Cuprite launches the Chrome or Chromium installed on the machine, which
+  `bin/setup` installs when there is none.
+- The git hooks (`prek.toml`, installed by `bin/setup`): on commit, gitleaks on the staged changes, RuboCop,
+  archspec and actionlint on changed workflows; on the commit message, the Conventional Commits check
+  (`bin/hooks/conventional-commit`); on push, a check that the branch contains the remote's latest `main`
+  (`bin/hooks/branch-on-main`; rebase onto it when it fails). Every tool runs through `mise exec`, so committing
+  needs no Docker. Run them by hand with `mise exec -- prek run --all-files` (add `--stage pre-push` for the push
+  check).
 - CI is split as 37signals' Fizzy splits it. `.github/workflows/checks.yml` runs what needs no database: brakeman
   (its findings also go to code scanning), `bundler-audit check --update`, `bun audit`, gitleaks over the tree,
   rubocop, archspec and actionlint. `.github/workflows/ci.yml` runs the tests, the system tests (one process,
   `PARALLEL_WORKERS=1`), a boot of the app outside rake, and a coverage job that merges both test jobs' line
   coverage and fails below the floor in `lib/tasks/coverage.rake`. `bin/ci` (`config/ci.rb`) runs a local version:
-  setup, rubocop, archspec, the audits, brakeman, tests, the boot, seeds, system tests and the coverage floor.
+  setup, rubocop, archspec, the audits, brakeman, gitleaks (`.gitleaks.toml` leaves out ignored output), tests,
+  the boot, seeds, system tests and the coverage floor.
 - Every test run measures line coverage of `app/` and `lib/` with SimpleCov (`.simplecov`; parallel workers
   merged). Only `bin/rails coverage:check` enforces the floor, on the merged suites, so a run of one file never
-  fails on coverage. Raise the floor when coverage rises. In the containers the results live in the bundle
-  volume (`COVERAGE_DIR`), not in `coverage/`: the workers lock the shared result file with flock, which the
-  macOS bind mount ignores, so writing there drops a worker's result now and then. `coverage:check` merges
-  whatever results the last runs left there, and writes its merged report to `merged/`; `dip ci` resets them
-  first, so it is the local check to trust. `dip coverage` copies the reports to `coverage/` (the last run's
-  in `coverage/index.html`, the merged one in `coverage/merged/index.html`).
+  fails on coverage. Raise the floor when coverage rises. `coverage:check` merges whatever results the last
+  runs left in `coverage/`, and writes its merged report to `coverage/merged/index.html`; `bin/ci` clears them
+  first, so it is the local check to trust. The last run's report is `coverage/index.html`.
 - `.github/workflows/security.yml` runs CodeQL (Ruby, JavaScript, workflows; `.github/codeql/codeql-config.yml`),
   zizmor and grype on pull requests, on `main` and daily, and `scorecard.yml` runs OpenSSF Scorecard. They
   publish to code scanning and never fail on a finding. `dependency-review.yml` fails a pull request that adds a
@@ -74,8 +78,9 @@ dip bash                                   # shell in the app container
 - Workflows pin every action by commit SHA with its version in a comment, start from `permissions: {}` and grant
   each job only what it uses, check out with `persist-credentials: false`, and set `timeout-minutes`. Dependabot
   (`.github/dependabot.yml`) updates gems, bun packages and actions weekly, once a version is 7 days old.
-- After changing `.dockerdev/Dockerfile`, `.dockerdev/Aptfile` or build args, bump the image tag in
-  `.dockerdev/compose.yml` and run `dip provision` again.
+- A system package the app needs goes in both the `Brewfile` and `[bootstrap.packages]` in `.mise.toml`, and in
+  the production `Dockerfile` when production needs it too. A tool version pinned in `.mise.toml` and in
+  `.github/workflows/checks.yml` changes in both.
 
 ## Architecture
 
@@ -127,7 +132,7 @@ Building blocks and their base classes:
   skill rather than reading `ENV` or credentials directly.
 - **Feature flags**: Flipper, stored in the database.
 - **Jobs, cache, cable**: Solid Queue, Cache and Cable on Postgres, each on its own database, in development as
-  in production. `dip rails s` runs the Solid Queue worker inside Puma (`SOLID_QUEUE_IN_PUMA`); tests use the
+  in production. `bin/dev` runs the Solid Queue worker inside Puma (`SOLID_QUEUE_IN_PUMA`); tests use the
   Active Job and Action Cable test adapters.
 - **Frontend**: entry points in `app/javascript/entrypoints/`, Stimulus controllers in
   `app/javascript/controllers/`, loaded in the layout with `vite_javascript_tag`/`vite_stylesheet_tag`.
@@ -159,7 +164,7 @@ and review cite it as `(pack: layered-rails, <file>)`.
 ## Tooling for agents
 
 - The `rails-hyperdrive` MCP server (`.mcp.json`) is served by the running app at `/_hyperdrive/mcp`, so it
-  only works while `dip rails s` is up. It gives routes, models, source locations, SQL and logs.
+  only works while `bin/dev` is up. It gives routes, models, source locations, SQL and logs.
 - Compound Engineering is configured in `.compound-engineering/config.yaml`; its artifacts (plans,
   brainstorms, solutions) live under `.compound-engineering/artifacts/`.
   `.compound-engineering/artifacts/solutions/` holds documented solutions to past problems (bugs, best

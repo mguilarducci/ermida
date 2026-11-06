@@ -1,7 +1,9 @@
-# Git hooks, run by prek (https://prek.j178.dev). `dip provision` installs them; after a change to
-# default_install_hook_types, install again with: mise exec prek@0.5.7 -- prek install --force
-# Run them by hand: mise exec prek@0.5.7 -- prek run --all-files
+# Git hooks, run by prek (https://prek.j178.dev). bin/setup installs them; after a change to
+# default_install_hook_types, run bin/setup again. Run them by hand: mise exec -- prek run --all-files
 # (--stage pre-push for the push checks)
+#
+# Every tool runs through `mise exec`, so a hook started from an editor or a GUI client, whose shell
+# hasn't activated mise, still gets the Ruby and the tool versions .mise.toml pins.
 
 default_install_hook_types = ["pre-commit", "commit-msg", "pre-push"]
 # Hooks without their own stages run on commit only
@@ -11,13 +13,11 @@ default_stages = ["pre-commit"]
 repo = "local"
 hooks = [
   # Staged changes only; --redact keeps a secret it finds out of the terminal scrollback
-  { id = "gitleaks", name = "gitleaks", language = "system", entry = "mise exec gitleaks@8.30.1 -- gitleaks git --pre-commit --staged --redact --verbose --no-banner", pass_filenames = false },
-  # Through dip, so it lints with the gems in the development container
-  { id = "rubocop", name = "rubocop", language = "system", entry = "dip rubocop --force-exclusion", types = ["ruby"] },
+  { id = "gitleaks", name = "gitleaks", language = "system", entry = "mise exec -- gitleaks git --pre-commit --staged --redact --verbose --no-banner", pass_filenames = false },
+  { id = "rubocop", name = "rubocop", language = "system", entry = "mise exec -- bin/rubocop --force-exclusion", types = ["ruby"] },
   # The whole app: dependency cycles span files, so checking only the staged ones isn't enough
-  { id = "archspec", name = "archspec", language = "system", entry = "dip archspec check", types = ["ruby"], pass_filenames = false },
-  # The version the actionlint job in ci.yml runs
-  { id = "actionlint", name = "actionlint", language = "system", entry = "mise exec actionlint@1.7.12 -- actionlint", files = "^\\.github/workflows/.*\\.ya?ml$" },
+  { id = "archspec", name = "archspec", language = "system", entry = "mise exec -- bundle exec archspec check", types = ["ruby"], pass_filenames = false },
+  { id = "actionlint", name = "actionlint", language = "system", entry = "mise exec -- actionlint", files = "^\\.github/workflows/.*\\.ya?ml$" },
   { id = "conventional-commit", name = "conventional commit", language = "script", entry = "bin/hooks/conventional-commit", stages = ["commit-msg"] },
   { id = "branch-on-main", name = "branch contains main", language = "script", entry = "bin/hooks/branch-on-main", stages = ["pre-push"], pass_filenames = false, always_run = true },
 ]

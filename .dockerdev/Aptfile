@@ -1,2 +1,0 @@
-# Extra Debian packages for the development image, one per line.
-# Bump the image tag in compose.yml after changing this file.

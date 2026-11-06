@@ -1,4 +1,6 @@
 require_relative "boot"
+# Read by config/database.yml, which every rake task loads before the app
+require_relative "local_database"
 
 require "rails/all"
 

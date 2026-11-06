@@ -1,2 +1,20 @@
-#!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+#!/usr/bin/env sh
+# Starts the development server: Rails, with the Solid Queue worker inside Puma as Kamal runs it in
+# production, and the Vite dev server (Procfile.dev), through foreman as 37signals' Fizzy does.
+#
+# The metrics exporter (yabeda) listens on 127.0.0.1:9394 only. Left alone it would listen on every
+# interface, and with PORT set it would try to take Puma's port.
+#
+# Foreman doesn't hand the terminal to its processes: to stop at `debugger` or `binding.irb`, run
+# `bin/rails server` in one terminal and `bin/vite dev` in another instead.
+
+if ! gem list foreman --installed --silent; then
+  echo "Installing foreman..."
+  gem install foreman
+fi
+
+# Foreman gives the first process PORT=5000 when PORT is unset; Rails' is 3000. PORT=3100 bin/dev
+# serves on 3100. Vite keeps the port in config/vite.json.
+export PORT="${PORT:-3000}"
+
+exec foreman start --formation web=1,vite=1 -f Procfile.dev "$@"

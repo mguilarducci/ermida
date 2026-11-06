@@ -7,7 +7,7 @@ ENV['RAILS_ENV'] ||= ENV['RACK_ENV']
 # Without Vite installed, `bun x vite` falls back to vite_ruby's own `vite` executable, which calls this file again,
 # over and over until the machine runs out of memory
 unless File.exist?(File.expand_path('../node_modules/.bin/vite', __dir__))
-  abort 'node_modules is missing: run `dip bun install` (or `bin/bun install`)'
+  abort 'node_modules is missing: run `bin/bun install`'
 end
 
 require 'bundler/setup'

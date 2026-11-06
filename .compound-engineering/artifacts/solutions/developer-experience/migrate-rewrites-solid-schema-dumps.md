@@ -7,7 +7,7 @@ problem_type: developer_experience
 component: development_workflow
 severity: low
 applies_when:
-  - "Running dip rails db:migrate or a rollback in development"
+  - "Running bin/rails db:migrate or a rollback in development"
   - "Committing a change that adds or edits a migration"
 tags: [migrations, schema-dump, solid-queue, solid-cache, solid-cable, multi-database]
 ---
@@ -56,7 +56,7 @@ On the `businesses` branch, after `dip rails db:migrate`:
 
 After restoring the three Solid files, only `db/schema.rb` remained, holding the new `businesses` table and the bumped schema version.
 
-A related multi-database detail from the same session: a bare `dip rails db:rollback` refuses to run here and asks for a database, so roll back the app's own tables with `dip rails db:rollback:primary`.
+A related multi-database detail from the same session: a bare `bin/rails db:rollback` refuses to run here and asks for a database, so roll back the app's own tables with `bin/rails db:rollback:primary`.
 
 ## Related
 

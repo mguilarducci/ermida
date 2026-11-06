@@ -125,6 +125,7 @@ jobs:
 
       - name: Install actionlint
         env:
+          # The version in .mise.toml, which the git hooks run; change them together
           VERSION: 1.7.12
           SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
         run: |
@@ -152,6 +153,7 @@ jobs:
 
       - name: Install gitleaks
         env:
+          # The version in .mise.toml, which the git hooks run; change them together
           VERSION: 8.30.1
           SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
         run: |
