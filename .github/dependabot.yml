@@ -1,12 +1,50 @@
+# Weekly pull requests for new versions of the gems (Gemfile.lock), the
+# JavaScript packages (bun.lock) and the actions, which the workflows pin by
+# SHA. A version is proposed only once it is 7 days old, so a compromised
+# release has time to be pulled. Each ecosystem's updates come in one pull
+# request, titled as a Conventional Commit with the scope deps: build(deps): …
+# for the gems and packages, ci(deps): … for the actions.
 version: 2
 updates:
-- package-ecosystem: bundler
-  directory: "/"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
-- package-ecosystem: github-actions
-  directory: "/"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
+  - package-ecosystem: bundler
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      gems:
+        patterns: ["*"]
+
+  - package-ecosystem: bun
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      packages:
+        patterns: ["*"]
+
+  # "/" reads .github/workflows.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions:
+        patterns: ["*"]
