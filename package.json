@@ -2,10 +2,10 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.4",
+    "@tailwindcss/vite": "^4.3.5",
     "daisyui": "^5.7.50",
-    "tailwindcss": "^4.3.4",
-    "vite": "^8.0.0",
+    "tailwindcss": "^4.3.5",
+    "vite": "^8.3.8",
     "vite-plugin-ruby": "^5.2.5"
   },
   "dependencies": {
