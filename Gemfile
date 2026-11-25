@@ -50,7 +50,7 @@ gem "vite_rails"
 # platforms would otherwise fall back silently to an old Bun (0.3.0 / Bun 1.3.8).
 # Ceiling: 0.5.1 calls Rake.load_rakefile whenever Rake is defined, but Rails defines
 # Rake partially, so every boot outside rake crashes. Lift it once that is fixed.
-gem "bundlebun", ">= 0.5", "< 0.5.1"
+gem "bundlebun", ">= 0.5", "< 0.5.2"
 # Serves assets of engines that ship their own (mission_control-jobs requires it even with Vite)
 gem "propshaft"
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
@@ -61,10 +61,10 @@ gem "turbo-rails"
 # ==============================================================================
 
 # UI components [https://viewcomponent.org]
-gem "view_component", "~> 4.22"
+gem "view_component", "~> 4.24"
 gem "view_component-contrib", "~> 0.2.5"
 # HTML-aware ERB: validation and debug tools for views (0.x; reactive APIs are experimental)
-gem "reactionview", "~> 0.6.0"
+gem "reactionview", "~> 0.6.1"
 # HTML+ERB parser: engine behind reactionview, also `herb analyze` [https://github.com/marcoroth/herb]
 gem "herb", "~> 0.11.1", require: false
 
@@ -185,7 +185,7 @@ group :development, :test do
   # Ruby style and lint (Standard)
   eval_gemfile "gemfiles/rubocop.gemfile"
   # Layer boundaries as static checks (Archspec.rb) [https://archspecrb.dev]
-  gem "archspec", "~> 1.2", require: false
+  gem "archspec", "~> 1.3", require: false
 end
 
 group :development do
